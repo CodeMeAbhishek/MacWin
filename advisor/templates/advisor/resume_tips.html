@@ -1,0 +1,22 @@
+{% extends "advisor/base.html" %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">📄 Resume Review & 🎤 Interview Tips</h2>
+
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary mt-2">Get AI Feedback</button>
+  </form>
+
+  {% if feedback %}
+    <div class="card border-info">
+      <div class="card-header bg-info text-white">AI Feedback</div>
+      <div class="card-body" style="white-space: pre-line;">
+        {{ feedback|safe }}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

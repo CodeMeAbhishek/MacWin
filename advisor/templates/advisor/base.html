@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Intelligent Virtual Career Advisor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body.dark-mode {
+          background-color: #121212;
+          color: #e0e0e0;
+        }
+      
+        .dark-mode .card,
+        .dark-mode .list-group-item,
+        .dark-mode .form-control {
+          background-color: #1f1f1f;
+          color: #e0e0e0;
+        }
+      
+        .dark-mode .card-header {
+          background-color: #272727 !important;
+        }
+      
+        .dark-mode .btn,
+        .dark-mode .alert {
+          background-color: #333;
+          color: white;
+          border-color: #555;
+        }
+      
+        .theme-toggle {
+          cursor: pointer;
+          font-size: 1.2rem;
+        }
+      </style>      
+</head>
+<body class="" id="pageBody">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <a class="navbar-brand" href="/">Career Advisor</a>
+        <div class="ms-auto">
+          <a href="/resume-tips" class="btn btn-outline-light btn-sm me-2">📄 Resume Tips</a>
+          <a href="/history?email={{ request.GET.email }}" class="btn btn-outline-light btn-sm me-2">📜 Advice History</a>
+          <button onclick="toggleTheme()" class="btn btn-outline-light btn-sm">🌓 Toggle Theme</button>
+        </div>
+      </nav>
+      
+      
+
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        function toggleTheme() {
+          const body = document.getElementById("pageBody");
+          body.classList.toggle("dark-mode");
+      
+          // Save theme preference in localStorage
+          if (body.classList.contains("dark-mode")) {
+            localStorage.setItem("theme", "dark");
+          } else {
+            localStorage.setItem("theme", "light");
+          }
+        }
+      
+        // Apply saved theme on page load
+        window.onload = function () {
+          const savedTheme = localStorage.getItem("theme");
+          if (savedTheme === "dark") {
+            document.getElementById("pageBody").classList.add("dark-mode");
+          }
+        };
+      </script>      
+</body>
+</html>

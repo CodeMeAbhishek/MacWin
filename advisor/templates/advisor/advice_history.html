@@ -1,0 +1,24 @@
+{% extends 'advisor/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h3 class="text-dark dark:text-light">
+        <span class="me-1">🧠</span> {{ request.session.user_name }}'s AI Advice History
+      </h3>
+      
+  
+  {% if history %}
+    <ul class="list-group">
+      {% for item in history %}
+        <li class="list-group-item">
+          <h6>{{ item.timestamp|date:"M d, Y - H:i" }}</h6>
+          <p><strong>Skills:</strong> {{ item.skills }}</p>
+          <p><strong>Experience:</strong> {{ item.experience }} year(s)</p>
+          <div class="alert alert-info" style="white-space: pre-wrap;">{{ item.advice|safe }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No history found. Submit your details on dashboard first.</p>
+  {% endif %}
+</div>
+{% endblock %}
