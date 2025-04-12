@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Search</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 20px;
+            background-color: #f3f2ef;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .search-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .job-container {
+            margin-top: 30px;
+        }
+        .job-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .job-title {
+            font-size: 18px;
+            color: #0a66c2;
+            margin-bottom: 8px;
+        }
+        .company-location {
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .view-job-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #0a66c2;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .view-job-btn:hover {
+            background-color: #004182;
+        }
+        .loader-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #0a66c2;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-left: 15px;
+            color: #666;
+            font-size: 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .search-btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1 class="search-title">Which fields are you interested in?</h1>
+        <p>Enter technologies separated by commas (e.g., python, java, aws)</p>
+        <form id="searchForm" onsubmit="searchJobs(event)">
+            {% csrf_token %}
+            <input type="text" id="search-input" class="search-input" 
+                   placeholder="Enter technologies (comma-separated)">
+            <button type="submit" id="search-btn" class="view-job-btn">Search</button>
+        </form>
+    </div>
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <div class="loading-text">Searching for jobs...</div>
+    </div>
+    <div id="results" class="job-container"></div>
+    <script>
+        const sessionId = Date.now().toString();
+        let lastSearch = '';
+        let isSearching = false;
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function showLoader() {
+            document.getElementById('loader').style.display = 'flex';
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = true;
+            searchBtn.classList.add('search-btn-disabled');
+        }
+        
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+            const searchBtn = document.getElementById('search-btn');
+            searchBtn.disabled = false;
+            searchBtn.classList.remove('search-btn-disabled');
+        }
+        
+        async function searchJobs(event) {
+            event.preventDefault();
+            if (isSearching) return;
+            
+            const input = document.getElementById('search-input').value;
+            if (!input.trim()) return;
+            
+            isSearching = true;
+            showLoader();
+            
+            try {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const response = await fetch('/search/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        technologies: input,
+                        sessionId: sessionId,
+                        lastSearch: lastSearch
+                    }),
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                displayResults(data);
+                lastSearch = input;
+            } catch (error) {
+                console.error('Error:', error);
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `<div class="job-card">Error: ${error.message}</div>`;
+            } finally {
+                hideLoader();
+                isSearching = false;
+            }
+        }
+
+        function displayResults(jobs) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            if (jobs.error) {
+                resultsDiv.innerHTML = `<div class="job-card">Error: ${jobs.error}</div>`;
+                return;
+            }
+            
+            if (!Array.isArray(jobs) || jobs.length === 0) {
+                resultsDiv.innerHTML = '<div class="job-card">No jobs found for the specified technologies.</div>';
+                return;
+            }
+            
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card';
+                jobCard.innerHTML = `
+                    <h2 class="job-title">${job.title}</h2>
+                    <div class="company-location">${job.company} | ${job.location}</div>
+                    <a href="${job.link}" class="view-job-btn" target="_blank">View Job</a>
+                `;
+                resultsDiv.appendChild(jobCard);
+            });
+        }
+        
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -3,11 +3,11 @@
 {% block content %}
 
 <div class="container mt-5 text-white">
-  <h1 class="mb-4 text-3xl fw-bold">🎯 Welcome {{ name }}</h1>
+  <h1 class="mb-4 text-3xl fw-bold">🎯 Welcome {{ user.name }}</h1>
 
   <div class="mb-4">
-    <p><strong>Role:</strong> {{ role }}</p>
-    <p><strong>Skills:</strong> {{ skills }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+    <p><strong>Skills:</strong> {{ user.skills }}</p>
     <p><strong>Experience:</strong> {{ experience }} years</p>
   </div>
 
@@ -41,23 +41,17 @@
             <h5 class="card-title text-info">{{ person.name }}</h5>
             <p><strong>Experience:</strong> {{ person.experience }} years</p>
             <p><strong>Skills:</strong> {{ person.skills }}</p>
-
-            {% if person.common_skills %}
-              <div class="mt-2">
-                <span class="text-muted small">🧩 Shared Skills:</span>
-                <div class="mt-1">
-                  {% for skill in person.common_skills %}
-                    <span class="badge bg-primary me-1">{{ skill }}</span>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endif %}
+            <p><strong>Common Skills:</strong>
+              {% for s in person.common_skills %}
+                <span class="badge bg-primary">{{ s }}</span>
+              {% endfor %}
+            </p>
           </div>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-muted">No similar users found yet.</p>
+    <p class="text-muted">No similar users found.</p>
   {% endif %}
 
   <hr class="my-4">
@@ -66,7 +60,7 @@
   <div class="row row-cols-1 row-cols-md-2 g-3">
     {% for dev in github_people %}
       <div class="col">
-        <div class="card bg-dark border-secondary text-white p-3 h-100">
+        <div class="card bg-dark text-white p-3 h-100">
           <div class="d-flex align-items-center mb-2">
             <img src="{{ dev.avatar_url }}" class="rounded-circle me-3" width="48" height="48">
             <div>
@@ -79,7 +73,6 @@
           {% if dev.bio %}
             <p class="fst-italic text-muted small">"{{ dev.bio|truncatewords:15 }}"</p>
           {% endif %}
-
           {% if dev.common_skills %}
             <div class="mt-2">
               <span class="text-muted small">🧩 Shared Skills:</span>
@@ -94,6 +87,25 @@
       </div>
     {% endfor %}
   </div>
+
+  <hr class="my-4">
+
+  <h4 class="fw-bold mb-3">🛰️ Real-Time Job Listings (LinkedIn)</h4>
+  {% if realtime_jobs %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      {% for job in realtime_jobs %}
+        <div class="col">
+          <div class="card bg-dark border-secondary p-3 h-100">
+            <h5 class="card-title text-info">{{ job.title }}</h5>
+            <p class="mb-1">🏢 {{ job.company }}<br>📍 {{ job.location }}</p>
+            <a href="{{ job.link }}" target="_blank" class="btn btn-sm btn-outline-info mt-2">View Job</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No live job listings found right now.</p>
+  {% endif %}
 
 </div>
 

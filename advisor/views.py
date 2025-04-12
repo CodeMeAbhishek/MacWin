@@ -12,6 +12,8 @@ import markdown
 from django.utils.html import mark_safe
 from .github_utils import find_similar_github_users
 import json
+import asyncio
+from scraper.views import JobScraper
 
 MAX_QUIZ_QUESTIONS = 3
 
@@ -276,6 +278,28 @@ def final_dashboard(request):
     similar_people = get_similar_users(profile)
     github_matches = find_similar_github_users([s.strip().lower() for s in skills.split(",")])
 
+    # 🔄 Real-Time LinkedIn Job Listings
+    realtime_jobs = []
+    try:
+        print(f"Starting job scraping for skills: {user_skills}")
+        scraper = JobScraper()
+        # Convert set to list and clean up the skills
+        skills_list = [skill.strip() for skill in user_skills if skill.strip()]
+        print(f"Cleaned skills list: {skills_list}")
+        
+        if skills_list:
+            realtime_jobs = asyncio.run(scraper.scrape_multiple_technologies(
+                ','.join(skills_list),
+                session_id=email
+            ))
+            print(f"Found {len(realtime_jobs)} jobs")
+        else:
+            print("No valid skills to search for jobs")
+    except Exception as e:
+        print(f"⚠️ Real-time scraping failed with error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
     context = {
         'user': profile,
         'skills': skills.split(','),
@@ -285,7 +309,9 @@ def final_dashboard(request):
         'quiz_data': [{'question': a.question.question_text, 'answer': a.answer_text} for a in answers],
         'similar_people': similar_people,
         'github_people': github_matches,
+        'realtime_jobs': realtime_jobs,
     }
+
     return render(request, 'advisor/final_dashboard.html', context)
 
 def people_like_you(request):
