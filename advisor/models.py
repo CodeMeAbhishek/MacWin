@@ -1,11 +1,25 @@
 from django.db import models
 
 # Create your models here.
+
 class UserProfile(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    skills = models.TextField()  # comma-separated
-    experience = models.PositiveIntegerField(default=0)  # years
+    skills = models.TextField()
+    years_of_experience = models.IntegerField()
+    age = models.IntegerField(null=True, blank=True)
+    role = models.CharField(max_length=50, choices=[
+        ('Student', 'Student'),
+        ('Teacher', 'Teacher'),
+        ('Individual', 'Individual'),
+        ('Job-seeker', 'Job-seeker'),
+    ], null=True, blank=True)
+    quiz_answers = models.TextField(null=True, blank=True)  # Store quiz answers as JSON
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 class JobMarketData(models.Model):
     role = models.CharField(max_length=100)
@@ -31,6 +45,10 @@ class QuizQuestion(models.Model):
     user_email = models.EmailField()
     question_text = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    for_students = models.BooleanField(default=False)
+    for_teachers = models.BooleanField(default=False)
+    for_job_seekers = models.BooleanField(default=False)
+    for_general = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Question for {self.user_email} - {self.question_text[:50]}"

@@ -3,7 +3,7 @@ from .models import UserProfile, JobMarketData
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'skills', 'experience')
+    list_display = ('name', 'email', 'skills', 'years_of_experience')
 
 @admin.register(JobMarketData)
 class JobMarketDataAdmin(admin.ModelAdmin):

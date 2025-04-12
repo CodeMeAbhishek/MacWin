@@ -1,12 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import UserProfile, JobMarketData, CareerAdviceHistory, QuizQuestion, QuizAnswer
-from .gemini import get_career_advice, generate_quiz_question
+from .gemini import (
+    get_career_advice,
+    generate_quiz_question,
+    generate_dynamic_quiz,
+    get_ai_dashboard_insights
+)
 from .forms import ResumeForm
 from .utils import get_resume_feedback
 import markdown
 from django.utils.html import mark_safe
-from .gemini import get_career_advice
 from .github_utils import find_similar_github_users
+import json
 
 MAX_QUIZ_QUESTIONS = 3
 
@@ -14,51 +19,98 @@ def home(request):
     return render(request, 'advisor/home.html')
 
 def dashboard(request):
+    print("\n=== Dashboard View ===")
+    print(f"Request method: {request.method}")
+    print(f"POST data: {request.POST}")
+    
     if request.method == "POST":
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        skills = request.POST.get('skills')
-        experience = int(request.POST.get('experience'))
+        print("\nProcessing POST request...")
+        
+        # Get form data
+        form_data = {
+            'name': request.POST.get('name', '').strip(),
+            'email': request.POST.get('email', '').strip(),
+            'skills': request.POST.get('skills', '').strip(),
+            'years_of_experience': request.POST.get('years_of_experience', ''),
+            'role': request.POST.get('role', ''),
+            'age': request.POST.get('age', '')
+        }
+        
+        print(f"\nForm data received: {form_data}")
 
-        request.session['user_email'] = email
-        request.session['user_name'] = name
+        # Validate required fields
+        missing_fields = [field for field, value in form_data.items() if not value]
+        if missing_fields:
+            print(f"\nMissing required fields: {missing_fields}")
+            return render(request, 'advisor/home.html', {
+                'error': f'Please fill in all required fields: {", ".join(missing_fields)}',
+                'form_data': form_data
+            })
 
-        profile, created = UserProfile.objects.get_or_create(email=email)
-        profile.name = name
-        profile.skills = skills
-        profile.experience = experience
-        profile.save()
+        try:
+            # Convert numeric fields
+            years_of_experience = int(form_data['years_of_experience'])
+            age = int(form_data['age'])
+            
+            print(f"\nValidated numeric fields - Experience: {years_of_experience}, Age: {age}")
+            
+            # Additional validation
+            if years_of_experience < 0 or years_of_experience > 50:
+                raise ValueError("Years of experience must be between 0 and 50")
+            if age < 15 or age > 100:
+                raise ValueError("Age must be between 15 and 100")
+                
+        except ValueError as e:
+            print(f"\nValidation error: {str(e)}")
+            return render(request, 'advisor/home.html', {
+                'error': f'Invalid input: {str(e)}',
+                'form_data': form_data
+            })
 
-        user_skills = set(skill.strip().lower() for skill in skills.split(","))
-        jobs = JobMarketData.objects.all()
-        recommendations = []
+        try:
+            print("\nSaving to session and database...")
+            # Save to session
+            request.session['user_email'] = form_data['email']
+            request.session['user_name'] = form_data['name']
 
-        for job in jobs:
-            job_skills = set(skill.strip().lower() for skill in job.required_skills.split(","))
-            match_score = len(user_skills & job_skills)
-            if match_score > 0:
-                recommendations.append({
-                    'role': job.role,
-                    'match_score': match_score,
-                    'required_skills': job.required_skills,
-                    'average_salary': job.average_salary,
-                    'demand_level': job.demand_level
-                })
+            # Create or update user profile
+            profile, created = UserProfile.objects.get_or_create(
+                email=form_data['email'],
+                defaults={
+                    'name': form_data['name'],
+                    'skills': form_data['skills'],
+                    'years_of_experience': years_of_experience,
+                    'role': form_data['role'],
+                    'age': age
+                }
+            )
+            
+            if not created:
+                # Update existing profile
+                profile.name = form_data['name']
+                profile.skills = form_data['skills']
+                profile.years_of_experience = years_of_experience
+                profile.role = form_data['role']
+                profile.age = age
+                profile.save()
 
-        recommendations = sorted(recommendations, key=lambda x: (-x['match_score'], -x['average_salary']))
+            print(f"\nUser profile {'created' if created else 'updated'}: {profile.id}")
+            
+            # Clear any existing quiz data
+            QuizQuestion.objects.filter(user_email=form_data['email']).delete()
+            QuizAnswer.objects.filter(user_email=form_data['email']).delete()
+            
+            print("\nRedirecting to dynamic_quiz...")
+            return redirect('dynamic_quiz')
 
-        raw_ai = get_career_advice(name, skills, experience)
-        ai_response = markdown.markdown(raw_ai)
-
-        CareerAdviceHistory.objects.create(
-            name=name,
-            email=email,
-            skills=skills,
-            experience=experience,
-            advice=ai_response
-        )
-
-        return redirect('dynamic_quiz')
+        except Exception as e:
+            print(f"\nError saving profile: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return render(request, 'advisor/home.html', {
+                'error': 'An error occurred while saving your profile. Please try again.',
+                'form_data': form_data
+            })
 
     return render(request, 'advisor/home.html')
 
@@ -89,102 +141,88 @@ def dynamic_quiz(request):
     if not email or not name:
         return redirect('home')
 
-    questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')
+    try:
+        user = UserProfile.objects.get(email=email)
+    except UserProfile.DoesNotExist:
+        return redirect('home')
     
     if request.method == 'POST':
-        for key in request.POST:
+        answers = []
+        for key, value in request.POST.items():
             if key.startswith('answer_'):
                 question_id = key.split('_')[1]
-                answer_text = request.POST.get(key)
-                question = QuizQuestion.objects.get(id=question_id)
-                # Delete any existing answers for this question and user
-                QuizAnswer.objects.filter(
-                    user_email=email,
-                    question=question
-                ).delete()
-                # Create new answer
-                QuizAnswer.objects.create(
-                    user_email=email,
-                    question=question,
-                    answer_text=answer_text
-                )
+                answer_text = value.strip()
+                if answer_text:  # Only process non-empty answers
+                    question = QuizQuestion.objects.get(id=question_id)
+                    # Delete any existing answers for this question and user
+                    QuizAnswer.objects.filter(
+                        user_email=email,
+                        question=question
+                    ).delete()
+                    # Create new answer
+                    QuizAnswer.objects.create(
+                        user_email=email,
+                        question=question,
+                        answer_text=answer_text
+                    )
+                    answers.append(answer_text)
         
-        # Check if we have all answers
-        answered_questions = QuizAnswer.objects.filter(user_email=email).count()
-        if answered_questions >= MAX_QUIZ_QUESTIONS:
-            return redirect('final_dashboard')
-        else:
-            # If not all questions are answered, stay on quiz page
-            return redirect('dynamic_quiz')
-
-    # Get previous Q&As for context
-    previous_qas = []
-    for q in questions:
-        try:
-            answer = QuizAnswer.objects.filter(
-                question=q,
-                user_email=email
-            ).order_by('-timestamp').first()
-            
-            if answer:
-                previous_qas.append({
-                    'question': q.question_text,
-                    'answer': answer.answer_text
-                })
-        except QuizAnswer.DoesNotExist:
-            continue
-
-    # Generate new questions until we have 3
-    while questions.count() < MAX_QUIZ_QUESTIONS:
-        # Format previous Q&As for the prompt
-        qa_context = "\n".join([
-            f"Q: {qa['question']}\nA: {qa['answer']}"
-            for qa in previous_qas
-        ])
+        # Store answers in user profile
+        user.quiz_answers = json.dumps(answers)
+        user.save()
         
-        # Get user profile data if available
-        try:
-            profile = UserProfile.objects.get(email=email)
-            skills = profile.skills
-            experience = profile.experience
-        except UserProfile.DoesNotExist:
-            skills = ""
-            experience = 0
-
-        # Generate new question using Gemini
-        new_question = generate_quiz_question(
-            name=name,
-            skills=skills,
-            experience=experience,
-            previous_qas=qa_context
-        )
+        # Generate AI insights based on answers
+        ai_insights = get_ai_dashboard_insights(user, answers)
         
-        QuizQuestion.objects.create(
+        # Store insights in session for dashboard
+        request.session['ai_insights'] = ai_insights
+        
+        return redirect('final_dashboard')
+
+    # For GET request, generate and show the quiz
+    # Clear any existing questions for this user
+    QuizQuestion.objects.filter(user_email=email).delete()
+    
+    # Generate new questions
+    questions = generate_dynamic_quiz(user)
+    
+    # Create QuizQuestion objects for each question
+    quiz_questions = []
+    for question_text in questions:
+        question = QuizQuestion.objects.create(
             user_email=email,
-            question_text=new_question
+            question_text=question_text,
+            for_students=(user.role == 'Student'),
+            for_teachers=(user.role == 'Teacher'),
+            for_job_seekers=(user.role == 'Job-seeker'),
+            for_general=(user.role == 'Individual')
         )
-        
-        # Refresh questions queryset
-        questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')[:MAX_QUIZ_QUESTIONS]
-
-    return render(request, 'advisor/dynamic_quiz.html', {'questions': questions})
+        quiz_questions.append(question)
+    
+    print(f"Generated {len(quiz_questions)} questions for {email}")  # Debug log
+    
+    return render(request, 'advisor/dynamic_quiz.html', {
+        'questions': quiz_questions,
+        'user': user,
+    })
 
 def get_similar_users(current_user):
     current_skills = set(skill.strip().lower() for skill in current_user.skills.split(","))
-    experience = current_user.experience
+    experience = current_user.years_of_experience
 
     other_users = UserProfile.objects.exclude(email=current_user.email)
     matches = []
 
     for user in other_users:
         user_skills = set(skill.strip().lower() for skill in user.skills.split(","))
-        skill_overlap = current_skills & user_skills
-        if len(skill_overlap) >= 2 and abs(user.experience - experience) <= 1:
+        mutual_skills = current_skills & user_skills
+
+        if len(mutual_skills) >= 1 and abs(user.years_of_experience - experience) <= 2:
             matches.append({
                 'name': user.name,
                 'skills': ", ".join(user_skills),
-                'experience': user.experience,
-                'common_skills': ", ".join(skill_overlap)
+                'experience': user.years_of_experience,
+                'common_skills': list(mutual_skills),  # 🔥 Mutual skills to display
             })
 
     return matches
@@ -196,13 +234,19 @@ def final_dashboard(request):
     if not email or not name:
         return redirect('home')
 
-    profile = UserProfile.objects.get(email=email)
-    skills = profile.skills
-    experience = profile.experience
+    try:
+        profile = UserProfile.objects.get(email=email)
+    except UserProfile.DoesNotExist:
+        return redirect('home')
 
+    skills = profile.skills
+    years_of_experience = profile.years_of_experience
+
+    # Get quiz answers
     answers = QuizAnswer.objects.filter(user_email=email).select_related('question')
     answer_data = "\n".join([f"Q: {a.question.question_text}\nA: {a.answer_text}" for a in answers])
 
+    # Get job recommendations
     user_skills = set(skill.strip().lower() for skill in skills.split(","))
     jobs = JobMarketData.objects.all()
     recommendations = []
@@ -221,23 +265,23 @@ def final_dashboard(request):
 
     recommendations = sorted(recommendations, key=lambda x: (-x['match_score'], -x['average_salary']))
 
-    prompt_context = f"{name} has {experience} years experience with skills {skills}. " \
-                     f"Here are more details from their quiz:\n{answer_data}"
+    # Get AI insights
+    ai_insights = request.session.get('ai_insights')
+    if not ai_insights:
+        # Generate new insights if not in session
+        ai_insights = get_ai_dashboard_insights(profile, [a.answer_text for a in answers])
+        request.session['ai_insights'] = ai_insights
 
-    raw_advice = get_career_advice(name, skills, experience)
-    advice = mark_safe(markdown.markdown(raw_advice))
-
+    # Get similar users and GitHub matches
     similar_people = get_similar_users(profile)
-    
-    # Get GitHub matches based on user skills
     github_matches = find_similar_github_users([s.strip().lower() for s in skills.split(",")])
 
     context = {
-        'name': name,
-        'skills': skills,
-        'experience': experience,
+        'user': profile,
+        'skills': skills.split(','),
+        'experience': years_of_experience,
         'recommendations': recommendations,
-        'career_advice': advice,
+        'ai_insights': mark_safe(markdown.markdown(ai_insights)),
         'quiz_data': [{'question': a.question.question_text, 'answer': a.answer_text} for a in answers],
         'similar_people': similar_people,
         'github_people': github_matches,
@@ -255,4 +299,53 @@ def people_like_you(request):
     return render(request, 'advisor/people_like_you.html', {
         'github_people': github_people,
         'user_profile': profile
+    })
+
+def start_quiz(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        skills = request.POST.get('skills')
+        years_of_experience = request.POST.get('years_of_experience')
+        age = request.POST.get('age')
+        role = request.POST.get('role')
+
+        user, created = UserProfile.objects.update_or_create(
+            email=email,
+            defaults={
+                'name': name,
+                'skills': skills,
+                'years_of_experience': years_of_experience,
+                'age': age,
+                'role': role,
+            }
+        )
+
+        # Redirect to dynamic quiz generation
+        return redirect('quiz', user_id=user.id)
+
+    return render(request, 'career/start_quiz.html')
+
+def quiz_questions(request, user_id):
+    profile = get_object_or_404(UserProfile, id=user_id)
+    
+    # Generate dynamic questions based on user profile
+    questions = generate_dynamic_quiz(profile)
+    
+    # Create QuizQuestion objects for each question
+    quiz_questions = []
+    for question_text in questions:
+        question = QuizQuestion.objects.create(
+            user_email=profile.email,
+            question_text=question_text,
+            for_students=(profile.role == 'Student'),
+            for_teachers=(profile.role == 'Teacher'),
+            for_job_seekers=(profile.role == 'Job-seeker'),
+            for_general=(profile.role == 'Individual')
+        )
+        quiz_questions.append(question)
+    
+    return render(request, 'advisor/quiz_questions.html', {
+        'questions': quiz_questions,
+        'profile': profile
     })

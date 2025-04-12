@@ -1,22 +1,30 @@
-{% extends "advisor/base.html" %}
-
+{% extends 'advisor/base.html' %}
 {% block content %}
+
 <div class="container">
-  <h2 class="mb-4">📄 Resume Review & 🎤 Interview Tips</h2>
+  <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
+    <h2 class="mb-3">📄 Resume & Interview Advice</h2>
+    <p class="text-muted mb-4">Paste your resume below and get smart feedback from our AI advisor.</p>
 
-  <form method="post" class="mb-4">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary mt-2">Get AI Feedback</button>
-  </form>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <textarea name="resume_text" class="form-control" rows="8"
+          placeholder="Paste your resume text here..." required></textarea>
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary fw-bold">
+          Get Tips <i class="bi bi-stars ms-1"></i>
+        </button>
+      </div>
+    </form>
 
-  {% if feedback %}
-    <div class="feedback-section">
-      <h3 class="feedback-header">AI Feedback</h3>
-      <div class="feedback-content">
+    {% if feedback %}
+      <div class="alert alert-success mt-4" style="white-space: pre-wrap;">
         {{ feedback|safe }}
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 </div>
+
 {% endblock %}
