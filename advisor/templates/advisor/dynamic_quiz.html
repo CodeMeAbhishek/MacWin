@@ -2,15 +2,21 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Career Quiz</h2>
+    <h2 class="mb-4">Career Quiz</h2>
     <div class="card">
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
                 {% for question in questions %}
-                <div class="mb-3">
-                    <label class="form-label">{{ question.question_text }}</label>
-                    <textarea name="answer_{{ question.id }}" rows="4" class="form-control" required></textarea>
+                <div class="mb-4">
+                    <label class="form-label fw-bold quiz-question">{{ question.question_text }}</label>
+                    <textarea 
+                        name="answer_{{ question.id }}" 
+                        rows="4" 
+                        class="form-control" 
+                        required
+                        placeholder="Type your answer here..."
+                    ></textarea>
                 </div>
                 {% endfor %}
                 <button type="submit" class="btn btn-primary">Submit Answers</button>
@@ -18,4 +24,29 @@
         </div>
     </div>
 </div>
+
+<style>
+    .text-primary-emphasis {
+        color: var(--bs-primary-text-emphasis);
+    }
+    
+    .form-control::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.65;
+    }
+
+    .form-control {
+        color: var(--bs-body-color) !important;
+    }
+
+    .card {
+        border-color: var(--bs-border-color);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .text-primary-emphasis {
+            color: #8bb9fe !important;
+        }
+    }
+</style>
 {% endblock %} 

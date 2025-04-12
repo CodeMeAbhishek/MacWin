@@ -33,21 +33,29 @@
             border-color: #3557c5;
         }
         .form-control {
-            background-color: #3d3d3d;
+            background-color: #2d2d2d;
             border-color: #4d4d4d;
             color: #ffffff;
             transition: all 0.3s ease;
         }
         .form-control:focus {
-            background-color: #3d3d3d;
+            background-color: #2d2d2d;
             border-color: #4a6ee0;
             color: #ffffff;
             box-shadow: 0 0 0 0.25rem rgba(74, 110, 224, 0.25);
         }
+        .form-control::placeholder {
+            color: #999999;
+            opacity: 1;
+        }
         textarea {
-            background-color: #3d3d3d !important;
+            background-color: #2d2d2d !important;
             color: #ffffff !important;
             border-color: #4d4d4d !important;
+        }
+        textarea:focus {
+            background-color: #2d2d2d !important;
+            border-color: #4a6ee0 !important;
         }
 
         /* Feedback Section Styling - Dark Theme */
@@ -74,10 +82,15 @@
             color: #ffffff;
         }
 
+        /* Quiz Styles - Dark Theme */
+        .quiz-question {
+            color: #ffffff !important;
+        }
+
         /* Light Theme */
         body.light-theme {
             background-color: #f8f9fa;
-            color: #333333;
+            color: #000000;
         }
         body.light-theme .navbar {
             background-color: #ffffff;
@@ -85,20 +98,31 @@
         }
         body.light-theme .navbar-dark .navbar-brand,
         body.light-theme .navbar-dark .btn-outline-light {
-            color: #333333;
-            border-color: #333333;
+            color: #000000;
+            border-color: #000000;
         }
         body.light-theme .card {
             background-color: #ffffff;
             border: 1px solid #dee2e6;
+            color: #000000;
         }
         body.light-theme .form-control {
             background-color: #ffffff;
             border-color: #ced4da;
-            color: #333333;
+            color: #000000;
+        }
+        body.light-theme .form-control:focus {
+            background-color: #ffffff;
+            border-color: #4a6ee0;
+            color: #000000;
+            box-shadow: 0 0 0 0.25rem rgba(74, 110, 224, 0.25);
+        }
+        body.light-theme .form-control::placeholder {
+            color: #666666;
+            opacity: 1;
         }
         body.light-theme .text-white {
-            color: #333333 !important;
+            color: #000000 !important;
         }
         body.light-theme .border-gray-500 {
             border-color: #dee2e6 !important;
@@ -106,6 +130,7 @@
         body.light-theme .bg-gray-800 {
             background-color: #ffffff !important;
             border: 1px solid #dee2e6;
+            color: #000000;
         }
         body.light-theme .text-gray-400 {
             color: #6c757d !important;
@@ -119,17 +144,23 @@
             background-color: #ffffff;
             border: 1px solid #dee2e6;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            color: #000000;
         }
         body.light-theme .feedback-header {
-            color: #333333;
+            color: #000000;
         }
         body.light-theme .feedback-content {
-            color: #333333;
+            color: #000000;
         }
         body.light-theme .feedback-content p,
         body.light-theme .feedback-content ul,
         body.light-theme .feedback-content li {
-            color: #333333;
+            color: #000000;
+        }
+
+        /* Quiz Styles - Light Theme */
+        body.light-theme .quiz-question {
+            color: #000000 !important;
         }
 
         /* Additional text color handling */
@@ -142,20 +173,48 @@
         body.light-theme p,
         body.light-theme label,
         body.light-theme span:not([class*="text-"]) {
-            color: #333333;
+            color: #000000;
         }
         body.light-theme textarea {
             background-color: #ffffff !important;
-            color: #333333 !important;
-            border: 1px solid #ced4da !important;
+            color: #000000 !important;
+            border-color: #ced4da !important;
+        }
+        body.light-theme textarea:focus {
+            background-color: #ffffff !important;
+            border-color: #4a6ee0 !important;
         }
         body.light-theme .btn-outline-light {
-            color: #333333;
-            border-color: #333333;
+            color: #000000;
+            border-color: #000000;
         }
         body.light-theme .btn-outline-light:hover {
             color: #ffffff;
-            background-color: #333333;
+            background-color: #000000;
+        }
+
+        /* Selection styles - Dark Theme */
+        .form-control::selection,
+        textarea::selection {
+            background-color: #4a6ee0;
+            color: #ffffff;
+        }
+        .form-control::-moz-selection,
+        textarea::-moz-selection {
+            background-color: #4a6ee0;
+            color: #ffffff;
+        }
+
+        /* Selection styles - Light Theme */
+        body.light-theme .form-control::selection,
+        body.light-theme textarea::selection {
+            background-color: #4a6ee0;
+            color: #ffffff;
+        }
+        body.light-theme .form-control::-moz-selection,
+        body.light-theme textarea::-moz-selection {
+            background-color: #4a6ee0;
+            color: #ffffff;
         }
     </style>
 </head>
