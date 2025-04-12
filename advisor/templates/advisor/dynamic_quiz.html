@@ -3,7 +3,10 @@
 
 <div class="container">
   <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
-    <h2 class="mb-3">🧠 Personalized Career Quiz</h2>
+    <div class="d-flex align-items-center mb-3">
+      <div class="brain-icon me-3">🧠</div>
+      <h2 class="mb-0">Personalized Career Quiz</h2>
+    </div>
     <p class="text-muted mb-4">Answer these questions to help us understand your goals.</p>
 
     <form method="post">
@@ -11,19 +14,78 @@
       {% for question in questions %}
         <div class="mb-4">
           <label class="form-label fw-semibold">{{ question.question_text }}</label>
-          <textarea name="answer_{{ question.id }}" rows="3" required
-            class="form-control"
-            placeholder="Type your answer here..."></textarea>
+          <textarea 
+            name="answer_{{ question.id }}" 
+            rows="3" 
+            required
+            class="form-control quiz-textarea"
+            placeholder="Type your answer here..."
+          ></textarea>
         </div>
       {% endfor %}
 
       <div class="d-grid mt-4">
-        <button type="submit" class="btn btn-success fw-bold">
+        <button type="submit" class="btn btn-primary btn-lg fw-bold">
           Submit Answers <i class="bi bi-check-circle ms-2"></i>
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<style>
+  /* Quiz-specific dark mode styles */
+  .dark-mode .card {
+    background-color: #1f1f1f;
+    border-color: #333;
+  }
+  
+  .dark-mode .text-muted {
+    color: #adb5bd !important;
+  }
+  
+  .dark-mode .form-label {
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .quiz-textarea {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+  
+  .dark-mode .quiz-textarea:focus {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .dark-mode .quiz-textarea::placeholder {
+    color: #6c757d;
+  }
+  
+  .dark-mode .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+  
+  .dark-mode .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+  }
+  
+  .brain-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  /* Smooth transitions */
+  .card,
+  .form-control,
+  .btn {
+    transition: all 0.3s ease;
+  }
+</style>
 
 {% endblock %}

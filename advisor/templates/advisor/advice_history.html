@@ -3,16 +3,19 @@
 
 <div class="container mt-4">
   <div class="card p-4 shadow-lg">
-    <h3 class="mb-4">🕘 Your Past Career Insights</h3>
+    <div class="d-flex align-items-center mb-4">
+      <div class="history-icon me-3">🕘</div>
+      <h3 class="mb-0">Your Past Career Insights</h3>
+    </div>
 
     {% if history %}
-      <div class="list-group">
+      <div class="list-group history-list">
         {% for item in history %}
-          <div class="list-group-item bg-dark text-white border-light mb-3 rounded">
-            <h6 class="fw-bold text-info">{{ item.timestamp|date:"M d, Y - H:i" }}</h6>
+          <div class="list-group-item history-item mb-3 rounded">
+            <h6 class="fw-bold timestamp">{{ item.timestamp|date:"M d, Y - H:i" }}</h6>
             <p><strong>Skills:</strong> {{ item.skills }}</p>
             <p><strong>Experience:</strong> {{ item.experience }} years</p>
-            <div class="alert alert-info mt-2" style="white-space: pre-wrap;">
+            <div class="alert history-advice mt-2" style="white-space: pre-wrap;">
               {{ item.advice|safe }}
             </div>
           </div>
@@ -23,5 +26,63 @@
     {% endif %}
   </div>
 </div>
+
+<style>
+  /* History page dark mode styles */
+  .dark-mode .card {
+    background-color: #1f1f1f;
+    border-color: #333;
+  }
+  
+  .dark-mode .text-muted {
+    color: #adb5bd !important;
+  }
+  
+  .dark-mode .history-item {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .timestamp {
+    color: #6ea8fe;
+  }
+  
+  .dark-mode .history-advice {
+    background-color: #1c2a38;
+    color: #6ea8fe;
+    border-color: #084298;
+  }
+  
+  .history-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  /* Smooth transitions */
+  .card,
+  .list-group-item,
+  .alert {
+    transition: all 0.3s ease;
+  }
+  
+  /* List group spacing */
+  .history-list {
+    gap: 1rem;
+  }
+  
+  .history-item {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .history-advice {
+    margin: 1rem -1rem -1rem -1rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+</style>
 
 {% endblock %}

@@ -2,111 +2,262 @@
 {% load static %}
 {% block content %}
 
-<div class="container mt-5 text-white">
-  <h1 class="mb-4 text-3xl fw-bold">🎯 Welcome {{ user.name }}</h1>
-
-  <div class="mb-4">
-    <p><strong>Role:</strong> {{ user.role }}</p>
-    <p><strong>Skills:</strong> {{ user.skills }}</p>
-    <p><strong>Experience:</strong> {{ experience }} years</p>
+<div class="container mt-5">
+  <div class="d-flex align-items-center mb-4">
+    <div class="target-icon me-3">🎯</div>
+    <h1 class="mb-0 fw-bold">Welcome {{ user.name }}!</h1>
   </div>
 
-  <hr class="mb-4">
-
-  <h4 class="fw-bold mb-3">🧠 Quiz Answers</h4>
-  <ul class="list-group mb-4">
-    {% for item in quiz_data %}
-      <li class="list-group-item bg-dark text-white border-light rounded mb-2">
-        <strong>Q:</strong> {{ item.question }}<br>
-        <strong>A:</strong> {{ item.answer }}
-      </li>
-    {% endfor %}
-  </ul>
-
-  <hr class="my-4">
-
-  <h4 class="fw-bold mb-3">💡 Gemini Career Advice</h4>
-  <div class="alert alert-info" style="white-space: pre-wrap;">
-    {{ ai_insights|safe }}
-  </div>
-
-  <hr class="my-4">
-
-  <h4 class="fw-bold mb-3">👥 People Like You</h4>
-  {% if similar_people %}
-    <div class="row row-cols-1 row-cols-md-2 g-3">
-      {% for person in similar_people %}
-        <div class="col">
-          <div class="card bg-dark border-light p-3">
-            <h5 class="card-title text-info">{{ person.name }}</h5>
-            <p><strong>Experience:</strong> {{ person.experience }} years</p>
-            <p><strong>Skills:</strong> {{ person.skills }}</p>
-            <p><strong>Common Skills:</strong>
-              {% for s in person.common_skills %}
-                <span class="badge bg-primary">{{ s }}</span>
-              {% endfor %}
-            </p>
-          </div>
-        </div>
-      {% endfor %}
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <p><strong>Role:</strong> {{ user.role }}</p>
+      <p><strong>Skills:</strong> {{ user.skills }}</p>
+      <p><strong>Experience:</strong> {{ experience }} years</p>
     </div>
-  {% else %}
-    <p class="text-muted">No similar users found.</p>
-  {% endif %}
+  </div>
 
-  <hr class="my-4">
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="brain-icon me-2">🧠</div>
+        <h4 class="mb-0 fw-bold">Quiz Answers</h4>
+      </div>
+      <ul class="list-group quiz-list">
+        {% for item in quiz_data %}
+          <li class="list-group-item quiz-item rounded mb-2">
+            <strong>Q:</strong> {{ item.question }}<br>
+            <strong>A:</strong> {{ item.answer }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
-  <h4 class="fw-bold mb-3">🌐 GitHub Matches</h4>
-  <div class="row row-cols-1 row-cols-md-2 g-3">
-    {% for dev in github_people %}
-      <div class="col">
-        <div class="card bg-dark text-white p-3 h-100">
-          <div class="d-flex align-items-center mb-2">
-            <img src="{{ dev.avatar_url }}" class="rounded-circle me-3" width="48" height="48">
-            <div>
-              <a href="{{ dev.html_url }}" class="text-info fw-bold" target="_blank">{{ dev.login }}</a><br>
-              <small class="text-muted">
-                📦 {{ dev.public_repos }} repos · 👥 {{ dev.followers }} followers
-              </small>
-            </div>
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="bulb-icon me-2">💡</div>
+        <h4 class="mb-0 fw-bold">Gemini Career Advice</h4>
+      </div>
+      <div id="ai-insights-container" class="alert insights-alert" style="white-space: pre-wrap;">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
-          {% if dev.bio %}
-            <p class="fst-italic text-muted small">"{{ dev.bio|truncatewords:15 }}"</p>
-          {% endif %}
-          {% if dev.common_skills %}
-            <div class="mt-2">
-              <span class="text-muted small">🧩 Shared Skills:</span>
-              <div class="mt-1">
-                {% for skill in dev.common_skills %}
-                  <span class="badge bg-info text-dark me-1">{{ skill }}</span>
-                {% endfor %}
-              </div>
-            </div>
-          {% endif %}
+          <p class="mt-2">Generating personalized insights...</p>
         </div>
       </div>
-    {% endfor %}
+    </div>
   </div>
 
-  <hr class="my-4">
-
-  <h4 class="fw-bold mb-3">🛰️ Real-Time Job Listings (LinkedIn)</h4>
-  {% if realtime_jobs %}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-      {% for job in realtime_jobs %}
-        <div class="col">
-          <div class="card bg-dark border-secondary p-3 h-100">
-            <h5 class="card-title text-info">{{ job.title }}</h5>
-            <p class="mb-1">🏢 {{ job.company }}<br>📍 {{ job.location }}</p>
-            <a href="{{ job.link }}" target="_blank" class="btn btn-sm btn-outline-info mt-2">View Job</a>
-          </div>
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="people-icon me-2">👥</div>
+        <h4 class="mb-0 fw-bold">People Like You On This Platform</h4>
+      </div>
+      {% if similar_people %}
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+          {% for person in similar_people %}
+            <div class="col">
+              <div class="card similar-person-card p-3">
+                <h5 class="card-title">{{ person.name }}</h5>
+                <p><strong>Experience:</strong> {{ person.experience }} years</p>
+                <p><strong>Skills:</strong> {{ person.skills }}</p>
+                <p><strong>Common Skills:</strong>
+                  {% for s in person.common_skills %}
+                    <span class="badge bg-primary">{{ s }}</span>
+                  {% endfor %}
+                </p>
+              </div>
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}
+      {% else %}
+        <p class="text-muted">No similar users found.</p>
+      {% endif %}
     </div>
-  {% else %}
-    <p class="text-muted">No live job listings found right now.</p>
-  {% endif %}
+  </div>
 
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="github-icon me-2">🌐</div>
+        <h4 class="mb-0 fw-bold">GitHub Matches</h4>
+      </div>
+      <div class="row row-cols-1 row-cols-md-2 g-3">
+        {% for dev in github_people %}
+          <div class="col">
+            <div class="card github-card p-3 h-100">
+              <div class="d-flex align-items-center mb-2">
+                <img src="{{ dev.avatar_url }}" class="rounded-circle me-3" width="48" height="48">
+                <div>
+                  <a href="{{ dev.html_url }}" class="github-link fw-bold" target="_blank">{{ dev.login }}</a><br>
+                  <small class="text-muted">
+                    📦 {{ dev.public_repos }} repos · 👥 {{ dev.followers }} followers
+                  </small>
+                </div>
+              </div>
+              {% if dev.bio %}
+                <p class="fst-italic text-muted small">"{{ dev.bio|truncatewords:15 }}"</p>
+              {% endif %}
+              {% if dev.common_skills %}
+                <div class="mt-2">
+                  <span class="text-muted small">🧩 Shared Skills:</span>
+                  <div class="mt-1">
+                    {% for skill in dev.common_skills %}
+                      <span class="badge skill-badge me-1">{{ skill }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card dashboard-card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <div class="job-icon me-2">🛰️</div>
+        <h4 class="mb-0 fw-bold">Real-Time Job Listings (LinkedIn)</h4>
+      </div>
+      {% if realtime_jobs %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          {% for job in realtime_jobs %}
+            <div class="col">
+              <div class="card job-card p-3 h-100">
+                <h5 class="card-title">{{ job.title }}</h5>
+                <p class="mb-1">🏢 {{ job.company }}<br>📍 {{ job.location }}</p>
+                <a href="{{ job.link }}" target="_blank" class="btn btn-outline-primary mt-2">View Job</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          <p class="mb-0">No live job listings found right now. This could be because:</p>
+          <ul class="mb-0 mt-2">
+            <li>Your skills may need to be updated in your profile</li>
+            <li>LinkedIn's job search API may be temporarily unavailable</li>
+            <li>There might be no current job postings matching your skills</li>
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Dashboard dark mode styles */
+  .dark-mode .dashboard-card {
+    background-color: #1f1f1f;
+    border-color: #333;
+  }
+  
+  .dark-mode .card-body {
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .quiz-item {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .similar-person-card,
+  .dark-mode .github-card,
+  .dark-mode .job-card {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .insights-alert {
+    background-color: #1c2a38;
+    color: #6ea8fe;
+    border-color: #084298;
+  }
+  
+  .dark-mode .github-link {
+    color: #6ea8fe;
+    text-decoration: none;
+  }
+  
+  .dark-mode .github-link:hover {
+    color: #9ec5fe;
+    text-decoration: underline;
+  }
+  
+  .dark-mode .skill-badge {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .dark-mode .text-muted {
+    color: #adb5bd !important;
+  }
+  
+  .dark-mode .btn-outline-primary {
+    color: #6ea8fe;
+    border-color: #6ea8fe;
+  }
+  
+  .dark-mode .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  /* Icons */
+  .target-icon,
+  .brain-icon,
+  .bulb-icon,
+  .people-icon,
+  .github-icon,
+  .job-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  /* Smooth transitions */
+  .card,
+  .list-group-item,
+  .btn,
+  .alert,
+  .badge {
+    transition: all 0.3s ease;
+  }
+  
+  /* Card shadows */
+  .dashboard-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* List spacing */
+  .quiz-list {
+    gap: 0.5rem;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function loadAIInsights() {
+        fetch('/get_ai_insights/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ai-insights-container').innerHTML = data.insights;
+            })
+            .catch(error => {
+                document.getElementById('ai-insights-container').innerHTML = 
+                    '<div class="alert alert-danger">Error loading insights. Please try again later.</div>';
+            });
+    }
+
+    // Start loading AI insights after a short delay to ensure page is rendered
+    setTimeout(loadAIInsights, 1000);
+});
+</script>
 
 {% endblock %}

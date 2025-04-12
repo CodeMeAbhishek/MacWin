@@ -113,7 +113,7 @@
     .dark-mode .text-info { color: #6edff6 !important; }
   </style>
 </head>
-<body id="pageBody">
+<body id="pageBody" class="{{ theme_class }}">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
     <div class="container">
       <a class="navbar-brand fw-bold" href="/">Career Advisor</a>
@@ -137,11 +137,38 @@
     function toggleTheme() {
       const body = document.getElementById("pageBody");
       body.classList.toggle("dark-mode");
-      localStorage.setItem("theme", body.classList.contains("dark-mode") ? "dark" : "light");
+      const theme = body.classList.contains("dark-mode") ? "dark" : "light";
+      localStorage.setItem("theme", theme);
+      
+      // Sync with Django session
+      fetch('/set-theme/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ theme: theme })
+      });
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
     }
 
     window.onload = function () {
-      if (localStorage.getItem("theme") === "dark") {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
         document.getElementById("pageBody").classList.add("dark-mode");
       }
     };

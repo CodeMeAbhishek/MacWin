@@ -14,11 +14,27 @@ from .github_utils import find_similar_github_users
 import json
 import asyncio
 from scraper.views import JobScraper
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 MAX_QUIZ_QUESTIONS = 3
 
+def get_theme_class(request):
+    theme = request.session.get('theme', 'light')
+    return 'dark-mode' if theme == 'dark' else ''
+
+@require_http_methods(["POST"])
+def set_theme(request):
+    data = json.loads(request.body)
+    theme = data.get('theme', 'light')
+    request.session['theme'] = theme
+    return JsonResponse({'status': 'success'})
+
+@ensure_csrf_cookie
 def home(request):
-    return render(request, 'advisor/home.html')
+    theme_class = get_theme_class(request)
+    return render(request, 'advisor/home.html', {'theme_class': theme_class})
 
 def dashboard(request):
     print("\n=== Dashboard View ===")
@@ -117,6 +133,7 @@ def dashboard(request):
     return render(request, 'advisor/home.html')
 
 def resume_tips(request):
+    theme_class = get_theme_class(request)
     feedback = None
     if request.method == 'POST':
         form = ResumeForm(request.POST)
@@ -125,18 +142,27 @@ def resume_tips(request):
             feedback = get_resume_feedback(resume_text)
     else:
         form = ResumeForm()
-    return render(request, 'advisor/resume_tips.html', {'form': form, 'feedback': feedback})
+    return render(request, 'advisor/resume_tips.html', {
+        'form': form, 
+        'feedback': feedback,
+        'theme_class': theme_class
+    })
 
 def advice_history(request):
+    theme_class = get_theme_class(request)
     email = request.GET.get('email') or request.session.get('user_email')
     history = []
 
     if email:
         history = CareerAdviceHistory.objects.filter(email=email).order_by('-timestamp')
 
-    return render(request, 'advisor/advice_history.html', {'history': history})
+    return render(request, 'advisor/advice_history.html', {
+        'history': history,
+        'theme_class': theme_class
+    })
 
 def dynamic_quiz(request):
+    theme_class = get_theme_class(request)
     email = request.session.get('user_email')
     name = request.session.get('user_name')
 
@@ -205,7 +231,7 @@ def dynamic_quiz(request):
     
     return render(request, 'advisor/dynamic_quiz.html', {
         'questions': quiz_questions,
-        'user': user,
+        'theme_class': theme_class
     })
 
 def get_similar_users(current_user):
@@ -230,6 +256,7 @@ def get_similar_users(current_user):
     return matches
 
 def final_dashboard(request):
+    theme_class = get_theme_class(request)
     email = request.session.get('user_email')
     name = request.session.get('user_name')
 
@@ -281,24 +308,18 @@ def final_dashboard(request):
     # 🔄 Real-Time LinkedIn Job Listings
     realtime_jobs = []
     try:
-        print(f"Starting job scraping for skills: {user_skills}")
         scraper = JobScraper()
-        # Convert set to list and clean up the skills
-        skills_list = [skill.strip() for skill in user_skills if skill.strip()]
-        print(f"Cleaned skills list: {skills_list}")
-        
-        if skills_list:
-            realtime_jobs = asyncio.run(scraper.scrape_multiple_technologies(
-                ','.join(skills_list),
-                session_id=email
-            ))
-            print(f"Found {len(realtime_jobs)} jobs")
-        else:
-            print("No valid skills to search for jobs")
+        # Convert set of skills back to comma-separated string
+        skills_string = ",".join(user_skills)
+        print(f"Searching jobs for skills: {skills_string}")  # Debug print
+        realtime_jobs = asyncio.run(scraper.scrape_multiple_technologies(
+            skills_string,
+            session_id=email
+        ))
+        print(f"Found {len(realtime_jobs)} jobs")  # Debug print
     except Exception as e:
-        print(f"⚠️ Real-time scraping failed with error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print("⚠️ Real-time scraping failed:", str(e))
+        traceback.print_exc()  # Add full traceback
 
     context = {
         'user': profile,
@@ -310,11 +331,13 @@ def final_dashboard(request):
         'similar_people': similar_people,
         'github_people': github_matches,
         'realtime_jobs': realtime_jobs,
+        'theme_class': theme_class
     }
 
     return render(request, 'advisor/final_dashboard.html', context)
 
 def people_like_you(request):
+    theme_class = get_theme_class(request)
     email = request.session.get('user_email')
     profile = UserProfile.objects.get(email=email)
 
@@ -324,10 +347,12 @@ def people_like_you(request):
 
     return render(request, 'advisor/people_like_you.html', {
         'github_people': github_people,
-        'user_profile': profile
+        'user_profile': profile,
+        'theme_class': theme_class
     })
 
 def start_quiz(request):
+    theme_class = get_theme_class(request)
     if request.method == 'POST':
         name = request.POST.get('name')
         email = request.POST.get('email')
@@ -350,9 +375,12 @@ def start_quiz(request):
         # Redirect to dynamic quiz generation
         return redirect('quiz', user_id=user.id)
 
-    return render(request, 'career/start_quiz.html')
+    return render(request, 'advisor/start_quiz.html', {
+        'theme_class': theme_class
+    })
 
 def quiz_questions(request, user_id):
+    theme_class = get_theme_class(request)
     profile = get_object_or_404(UserProfile, id=user_id)
     
     # Generate dynamic questions based on user profile
@@ -372,6 +400,28 @@ def quiz_questions(request, user_id):
         quiz_questions.append(question)
     
     return render(request, 'advisor/quiz_questions.html', {
+        'user': profile,
         'questions': quiz_questions,
-        'profile': profile
+        'theme_class': theme_class
     })
+
+def get_ai_insights(request):
+    email = request.session.get('user_email')
+    if not email:
+        return JsonResponse({'error': 'Please complete the quiz first'}, status=401)
+    
+    try:
+        profile = UserProfile.objects.get(email=email)
+        answers = QuizAnswer.objects.filter(user_email=email).select_related('question')
+        answer_texts = [a.answer_text for a in answers]
+        
+        # Generate AI insights
+        ai_insights = get_ai_dashboard_insights(profile, answer_texts)
+        
+        return JsonResponse({
+            'insights': mark_safe(markdown.markdown(ai_insights))
+        })
+    except UserProfile.DoesNotExist:
+        return JsonResponse({'error': 'User profile not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

@@ -3,28 +3,84 @@
 
 <div class="container">
   <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
-    <h2 class="mb-3">📄 Resume & Interview Advice</h2>
+    <div class="d-flex align-items-center mb-3">
+      <div class="resume-icon me-3">📄</div>
+      <h2 class="mb-0">Resume & Interview Advice</h2>
+    </div>
     <p class="text-muted mb-4">Paste your resume below and get smart feedback from our AI advisor.</p>
 
     <form method="post">
       {% csrf_token %}
       <div class="mb-3">
-        <textarea name="resume_text" class="form-control" rows="8"
-          placeholder="Paste your resume text here..." required></textarea>
+        <textarea 
+          name="resume_text" 
+          class="form-control resume-textarea" 
+          rows="8"
+          placeholder="Paste your resume text here..." 
+          required
+        ></textarea>
       </div>
       <div class="d-grid">
-        <button type="submit" class="btn btn-primary fw-bold">
+        <button type="submit" class="btn btn-primary btn-lg fw-bold">
           Get Tips <i class="bi bi-stars ms-1"></i>
         </button>
       </div>
     </form>
 
     {% if feedback %}
-      <div class="alert alert-success mt-4" style="white-space: pre-wrap;">
+      <div class="alert alert-success mt-4 feedback-alert" style="white-space: pre-wrap;">
         {{ feedback|safe }}
       </div>
     {% endif %}
   </div>
 </div>
+
+<style>
+  /* Resume tips dark mode styles */
+  .dark-mode .card {
+    background-color: #1f1f1f;
+    border-color: #333;
+  }
+  
+  .dark-mode .text-muted {
+    color: #adb5bd !important;
+  }
+  
+  .dark-mode .resume-textarea {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+  
+  .dark-mode .resume-textarea:focus {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .dark-mode .resume-textarea::placeholder {
+    color: #6c757d;
+  }
+  
+  .dark-mode .feedback-alert {
+    background-color: #051b11;
+    color: #75b798;
+    border-color: #0f5132;
+  }
+  
+  .resume-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  /* Smooth transitions */
+  .card,
+  .form-control,
+  .btn,
+  .alert {
+    transition: all 0.3s ease;
+  }
+</style>
 
 {% endblock %}

@@ -12,4 +12,6 @@ urlpatterns = [
     path('start-quiz/', views.start_quiz, name='start_quiz'),
     path('quiz-questions/<int:user_id>/', views.quiz_questions, name='quiz_questions'),
     path('people-like-you/', views.people_like_you, name='people_like_you'),
+    path('get_ai_insights/', views.get_ai_insights, name='get_ai_insights'),
+    path('set-theme/', views.set_theme, name='set_theme'),
 ]

@@ -3,7 +3,10 @@
 
 <div class="container d-flex justify-content-center align-items-center">
   <div class="card shadow-lg p-4 w-100" style="max-width: 600px;">
-    <h2 class="mb-4 text-center">🚀 Start Your Career Journey</h2>
+    <div class="d-flex align-items-center justify-content-center mb-4">
+      <div class="rocket-icon me-2">🚀</div>
+      <h2 class="mb-0">Start Your Career Journey</h2>
+    </div>
     
     {% if error %}
     <div class="alert alert-danger mb-3">
@@ -16,32 +19,32 @@
 
       <div class="mb-3">
         <label for="name" class="form-label">Full Name</label>
-        <input type="text" name="name" class="form-control" placeholder="Enter your name..." required value="{{ form_data.name|default:'' }}">
+        <input type="text" name="name" class="form-control home-input" placeholder="Enter your name..." required value="{{ form_data.name|default:'' }}">
       </div>
 
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
-        <input type="email" name="email" class="form-control" placeholder="example@domain.com" required value="{{ form_data.email|default:'' }}">
+        <input type="email" name="email" class="form-control home-input" placeholder="example@domain.com" required value="{{ form_data.email|default:'' }}">
       </div>
 
       <div class="mb-3">
         <label for="skills" class="form-label">Skills (comma separated)</label>
-        <input type="text" name="skills" class="form-control" placeholder="e.g. Python, HTML, AI" required value="{{ form_data.skills|default:'' }}">
+        <input type="text" name="skills" class="form-control home-input" placeholder="e.g. Python, HTML, AI" required value="{{ form_data.skills|default:'' }}">
       </div>
 
       <div class="mb-3">
         <label for="years_of_experience" class="form-label">Experience (Years)</label>
-        <input type="number" name="years_of_experience" class="form-control" placeholder="e.g. 2" required value="{{ form_data.years_of_experience|default:'' }}">
+        <input type="number" name="years_of_experience" class="form-control home-input" placeholder="e.g. 2" required value="{{ form_data.years_of_experience|default:'' }}">
       </div>
 
       <div class="mb-3">
         <label for="age" class="form-label">Your Age</label>
-        <input type="number" name="age" class="form-control" placeholder="e.g. 25" min="10" max="80" required value="{{ form_data.age|default:'' }}">
+        <input type="number" name="age" class="form-control home-input" placeholder="e.g. 25" min="10" max="80" required value="{{ form_data.age|default:'' }}">
       </div>
 
       <div class="mb-4">
         <label for="role" class="form-label">Your Role</label>
-        <select name="role" class="form-select" required>
+        <select name="role" class="form-select home-select" required>
           <option value="">-- Select Role --</option>
           <option value="Student" {% if form_data.role == 'Student' %}selected{% endif %}>Student</option>
           <option value="Teacher" {% if form_data.role == 'Teacher' %}selected{% endif %}>Teacher</option>
@@ -51,13 +54,69 @@
       </div>
 
       <div class="d-grid">
-        <button type="submit" class="btn btn-primary fw-semibold">
+        <button type="submit" class="btn btn-primary btn-lg fw-semibold">
           Continue to Quiz <i class="bi bi-arrow-right ms-2"></i>
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<style>
+  /* Home page dark mode styles */
+  .dark-mode .card {
+    background-color: #1f1f1f;
+    border-color: #333;
+  }
+  
+  .dark-mode .form-label {
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .home-input,
+  .dark-mode .home-select {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+  
+  .dark-mode .home-input:focus,
+  .dark-mode .home-select:focus {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  .dark-mode .home-input::placeholder {
+    color: #6c757d;
+  }
+  
+  .dark-mode .home-select option {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+  }
+  
+  .dark-mode .alert-danger {
+    background-color: #2c0b0e;
+    color: #ea868f;
+    border-color: #842029;
+  }
+  
+  .rocket-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  /* Smooth transitions */
+  .card,
+  .form-control,
+  .form-select,
+  .btn,
+  .alert {
+    transition: all 0.3s ease;
+  }
+</style>
 
 <script>
 document.getElementById('careerForm').addEventListener('submit', function(e) {
