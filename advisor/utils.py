@@ -16,3 +16,12 @@ Resume:
     raw_response = generate_gemini_response(prompt)
     html_response = markdown.markdown(raw_response)
     return html_response
+
+def generate_dynamic_questions(name, skills, experience):
+    # ...
+    print("Prompt to Gemini:\n", prompt)
+    print("Raw Gemini Response:\n", response)
+
+    questions = re.findall(r'\d+\.\s+(.*?)(?=\n\d+\.|\Z)', response.strip())
+    print("Parsed Questions:\n", questions)
+    return questions

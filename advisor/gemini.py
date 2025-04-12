@@ -24,3 +24,17 @@ def get_career_advice(name, skills, experience):
 def generate_gemini_response(prompt):
     response = model.generate_content(prompt)
     return response.text
+
+def generate_quiz_question(name, skills, experience, previous_qas):
+    prompt = f"""
+    You are generating a career-related dynamic quiz. 
+    The user is: {name}, with skills: {skills}, and {experience} years of experience.
+    
+    Here are previous questions and answers:
+    {previous_qas}
+    
+    Now ask the next question to better understand their background, goals, or preferences.
+    Return only the question text.
+    """
+    response = model.generate_content(prompt)
+    return response.text

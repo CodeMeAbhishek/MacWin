@@ -11,9 +11,9 @@
   </form>
 
   {% if feedback %}
-    <div class="card border-info">
-      <div class="card-header bg-info text-white">AI Feedback</div>
-      <div class="card-body" style="white-space: pre-line;">
+    <div class="feedback-section">
+      <h3 class="feedback-header">AI Feedback</h3>
+      <div class="feedback-content">
         {{ feedback|safe }}
       </div>
     </div>
