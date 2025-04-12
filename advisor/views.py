@@ -6,6 +6,7 @@ from .utils import get_resume_feedback
 import markdown
 from django.utils.html import mark_safe
 from .gemini import get_career_advice
+from .github_utils import find_similar_github_users
 
 MAX_QUIZ_QUESTIONS = 3
 
@@ -227,6 +228,9 @@ def final_dashboard(request):
     advice = mark_safe(markdown.markdown(raw_advice))
 
     similar_people = get_similar_users(profile)
+    
+    # Get GitHub matches based on user skills
+    github_matches = find_similar_github_users([s.strip().lower() for s in skills.split(",")])
 
     context = {
         'name': name,
@@ -235,6 +239,20 @@ def final_dashboard(request):
         'recommendations': recommendations,
         'career_advice': advice,
         'quiz_data': [{'question': a.question.question_text, 'answer': a.answer_text} for a in answers],
-        'similar_people': similar_people
+        'similar_people': similar_people,
+        'github_people': github_matches,
     }
     return render(request, 'advisor/final_dashboard.html', context)
+
+def people_like_you(request):
+    email = request.session.get('user_email')
+    profile = UserProfile.objects.get(email=email)
+
+    skills = [s.strip().lower() for s in profile.skills.split(",")]
+
+    github_people = find_similar_github_users(skills)
+
+    return render(request, 'advisor/people_like_you.html', {
+        'github_people': github_people,
+        'user_profile': profile
+    })

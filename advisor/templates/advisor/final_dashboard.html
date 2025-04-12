@@ -68,6 +68,35 @@
       </div>
     {% endif %}
   </div>
+  <hr class="my-6 border-gray-500">
+
+  <div>
+    <h2 class="text-2xl font-semibold mb-4 flex items-center gap-2">
+      🌐 Developers Like You on GitHub
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% for dev in github_people %}
+        <div class="bg-gray-900 rounded-2xl p-4 shadow-md flex items-start gap-4">
+          <img src="{{ dev.avatar_url }}" alt="{{ dev.login }}" class="w-12 h-12 rounded-full object-cover">
+          <div>
+            <a href="{{ dev.html_url }}" target="_blank" class="text-blue-400 text-lg font-medium hover:underline">
+              {{ dev.login }}
+            </a>
+            <p class="text-sm text-gray-400">
+              {% if dev.location %}📍 {{ dev.location }}<br>{% endif %}
+              📦 {{ dev.public_repos }} repos &nbsp;&nbsp;👥 {{ dev.followers }} followers
+            </p>
+            {% if dev.bio %}
+              <p class="text-gray-300 text-sm mt-1 italic">"{{ dev.bio|truncatewords:15 }}"</p>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <p>No GitHub developers found at this time.</p>
+      {% endfor %}
+    </div>
+  </div>
+  
 
   <hr class="my-6 border-gray-500">
 
