@@ -88,33 +88,83 @@ def dynamic_quiz(request):
     if not email or not name:
         return redirect('home')
 
+    questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')
+    
     if request.method == 'POST':
         for key in request.POST:
             if key.startswith('answer_'):
                 question_id = key.split('_')[1]
                 answer_text = request.POST.get(key)
                 question = QuizQuestion.objects.get(id=question_id)
+                # Delete any existing answers for this question and user
+                QuizAnswer.objects.filter(
+                    user_email=email,
+                    question=question
+                ).delete()
+                # Create new answer
                 QuizAnswer.objects.create(
                     user_email=email,
                     question=question,
                     answer_text=answer_text
                 )
-        return redirect('final_dashboard')
+        
+        # Check if we have all answers
+        answered_questions = QuizAnswer.objects.filter(user_email=email).count()
+        if answered_questions >= MAX_QUIZ_QUESTIONS:
+            return redirect('final_dashboard')
+        else:
+            # If not all questions are answered, stay on quiz page
+            return redirect('dynamic_quiz')
 
-    questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')[:3]
-    
-    if not questions.exists():
-        default_questions = [
-            "What are your career goals for the next 5 years?",
-            "What type of work environment do you prefer?",
-            "What aspects of your current/past work did you enjoy the most?"
-        ]
-        for q_text in default_questions:
-            QuizQuestion.objects.create(
-                user_email=email,
-                question_text=q_text
-            )
-        questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')[:3]
+    # Get previous Q&As for context
+    previous_qas = []
+    for q in questions:
+        try:
+            answer = QuizAnswer.objects.filter(
+                question=q,
+                user_email=email
+            ).order_by('-timestamp').first()
+            
+            if answer:
+                previous_qas.append({
+                    'question': q.question_text,
+                    'answer': answer.answer_text
+                })
+        except QuizAnswer.DoesNotExist:
+            continue
+
+    # Generate new questions until we have 3
+    while questions.count() < MAX_QUIZ_QUESTIONS:
+        # Format previous Q&As for the prompt
+        qa_context = "\n".join([
+            f"Q: {qa['question']}\nA: {qa['answer']}"
+            for qa in previous_qas
+        ])
+        
+        # Get user profile data if available
+        try:
+            profile = UserProfile.objects.get(email=email)
+            skills = profile.skills
+            experience = profile.experience
+        except UserProfile.DoesNotExist:
+            skills = ""
+            experience = 0
+
+        # Generate new question using Gemini
+        new_question = generate_quiz_question(
+            name=name,
+            skills=skills,
+            experience=experience,
+            previous_qas=qa_context
+        )
+        
+        QuizQuestion.objects.create(
+            user_email=email,
+            question_text=new_question
+        )
+        
+        # Refresh questions queryset
+        questions = QuizQuestion.objects.filter(user_email=email).order_by('timestamp')[:MAX_QUIZ_QUESTIONS]
 
     return render(request, 'advisor/dynamic_quiz.html', {'questions': questions})
 

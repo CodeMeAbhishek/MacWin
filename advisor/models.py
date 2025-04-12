@@ -44,3 +44,14 @@ class QuizAnswer(models.Model):
 
     def __str__(self):
         return f"Answer by {self.user_email} - {self.answer_text[:50]}"
+    
+class GitHubProfile(models.Model):
+    username = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    profile_url = models.URLField()
+    bio = models.TextField(null=True, blank=True)
+    repos_count = models.PositiveIntegerField(default=0)
+    languages = models.TextField(null=True, blank=True)  # Comma-separated
+    followers = models.PositiveIntegerField(default=0)
+    matched_skills = models.TextField(null=True, blank=True)  # Matching skills with our user
+    timestamp = models.DateTimeField(auto_now_add=True)
