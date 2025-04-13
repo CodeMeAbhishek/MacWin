@@ -102,15 +102,47 @@
     line-height: 1.7;
   }
 
-  .btn-primary {
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    transition: all 0.2s ease;
+  /* Resume feedback heading styles */
+  .feedback-content h2 {
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
   }
 
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
+  .feedback-content .section-heading {
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #4f46e5;
+  }
+
+  .feedback-content ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .feedback-content li,
+  .feedback-content p {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  /* Custom bullet points */
+  .feedback-content li::before,
+  .feedback-content p::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #4f46e5;
+    font-weight: bold;
   }
 
   /* Dark mode styles */
@@ -138,8 +170,38 @@
     background: rgba(255, 255, 255, 0.03);
   }
 
+  .dark-mode .feedback-content h2,
+  .dark-mode .feedback-content .section-heading {
+    color: #ffffff;
+  }
+
+  .dark-mode .feedback-content .section-heading {
+    border-bottom-color: #818cf8;
+  }
+
   .dark-mode .text-muted {
     color: #9ca3af !important;
+  }
+
+  .dark-mode .feedback-content li,
+  .dark-mode .feedback-content p {
+    color: #e5e7eb;
+  }
+
+  .dark-mode .feedback-content li::before,
+  .dark-mode .feedback-content p::before {
+    color: #818cf8;
+  }
+
+  .btn-primary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
   }
 
   @media (min-width: 992px) {

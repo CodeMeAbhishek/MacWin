@@ -18,6 +18,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 import traceback
+import re
 
 MAX_QUIZ_QUESTIONS = 3
 
@@ -31,6 +32,11 @@ def set_theme(request):
     theme = data.get('theme', 'light')
     request.session['theme'] = theme
     return JsonResponse({'status': 'success'})
+
+@ensure_csrf_cookie
+def landing(request):
+    theme_class = get_theme_class(request)
+    return render(request, 'advisor/landing.html', {'theme_class': theme_class})
 
 @ensure_csrf_cookie
 def home(request):
@@ -162,6 +168,106 @@ def advice_history(request):
         'theme_class': theme_class
     })
 
+def format_ai_insights(raw_insights):
+    """Format the AI insights into styled HTML sections"""
+    # First, clean up the text and handle markdown-style formatting
+    formatted_html = []
+    
+    # Split into sections
+    sections = raw_insights.split('\n')
+    
+    in_list = False
+    in_path_section = False
+    
+    for line in sections:
+        line = line.strip()
+        if not line:
+            if in_list:
+                formatted_html.append('</ul>')
+                in_list = False
+            continue
+            
+        # Handle main title
+        if line.startswith('**Career Development Plan for'):
+            formatted_html.append(f'<div class="main-title-section"><h1>{line.strip("*")}</h1></div>')
+            continue
+            
+        # Handle major section headers
+        if line.startswith('**1. Career Path Analysis'):
+            formatted_html.append('<div class="major-section-header"><h2>Career Path Analysis</h2>')
+            formatted_html.append('<div class="section-description">')
+            continue
+            
+        # Handle career path description
+        if line.startswith('Based on') and 'skills' in line and 'career paths' in line:
+            formatted_html.append(f'<p>{line}</p></div></div>')
+            continue
+            
+        # Handle path sections
+        if line.startswith('* **Path'):
+            if in_path_section:
+                formatted_html.append('</div>')
+            in_path_section = True
+            path_title = line.replace('* **', '').replace(':**', ':')
+            formatted_html.append(f'<div class="path-section"><div class="path-title">{path_title}</div>')
+            continue
+            
+        # Handle suitability sections
+        if line.startswith('* **Suitability:**'):
+            suitability_text = line.replace('* **Suitability:**', '').strip()
+            formatted_html.append(f'<div class="suitability"><strong>Suitability:</strong> {suitability_text}</div>')
+            continue
+            
+        # Handle explanation sections
+        if line.startswith('* **Explanation:**'):
+            explanation_text = line.replace('* **Explanation:**', '').strip()
+            formatted_html.append(f'<div class="explanation"><strong>Explanation:</strong> {explanation_text}</div>')
+            continue
+            
+        # Handle required skills section
+        if line.startswith('* **Required Skills'):
+            formatted_html.append('<div class="required-skills"><strong>Required Skills:</strong>')
+            formatted_html.append('<div class="skills-required">')
+            continue
+            
+        # Handle skill items
+        if line.startswith('* ') and 'Required Skills' in formatted_html[-2]:
+            skill = line.replace('* ', '').strip()
+            if '*' in skill:  # Check if skill has a note
+                skill_parts = skill.split('*')
+                skill_name = skill_parts[0].strip()
+                skill_note = f' <span class="skill-note">({skill_parts[1].strip("()")})</span>'
+                formatted_html.append(f'<span class="skill-tag">{skill_name}{skill_note}</span>')
+            else:
+                formatted_html.append(f'<span class="skill-tag">{skill}</span>')
+            continue
+            
+        # Handle regular list items
+        if line.startswith('* '):
+            if not in_list:
+                formatted_html.append('<ul>')
+                in_list = True
+            list_item = line.replace('* ', '')
+            # Remove markdown formatting from list items
+            list_item = list_item.replace('**', '')
+            formatted_html.append(f'<li>{list_item}</li>')
+            continue
+            
+        # Handle regular paragraphs
+        if in_list:
+            formatted_html.append('</ul>')
+            in_list = False
+        line = line.replace('**', '')  # Remove any remaining markdown
+        formatted_html.append(f'<p>{line}</p>')
+    
+    # Close any open sections
+    if in_path_section:
+        formatted_html.append('</div>')
+    if in_list:
+        formatted_html.append('</ul>')
+    
+    return '\n'.join(formatted_html)
+
 def dynamic_quiz(request):
     theme_class = get_theme_class(request)
     email = request.session.get('user_email')
@@ -203,8 +309,11 @@ def dynamic_quiz(request):
         # Generate AI insights based on answers
         ai_insights = get_ai_dashboard_insights(user, answers)
         
+        # Format the insights before storing
+        formatted_insights = format_ai_insights(ai_insights)
+        
         # Store insights in session for dashboard
-        request.session['ai_insights'] = ai_insights
+        request.session['ai_insights'] = formatted_insights
         
         # Store in CareerAdviceHistory
         CareerAdviceHistory.objects.create(
@@ -212,7 +321,7 @@ def dynamic_quiz(request):
             email=user.email,
             skills=user.skills,
             experience=user.years_of_experience,
-            advice=ai_insights
+            advice=formatted_insights
         )
         
         return redirect('final_dashboard')
@@ -308,7 +417,8 @@ def final_dashboard(request):
     ai_insights = request.session.get('ai_insights')
     if not ai_insights:
         # Generate new insights if not in session
-        ai_insights = get_ai_dashboard_insights(profile, [a.answer_text for a in answers])
+        raw_insights = get_ai_dashboard_insights(profile, [a.answer_text for a in answers])
+        ai_insights = format_ai_insights(raw_insights)
         request.session['ai_insights'] = ai_insights
 
     # Get similar users and GitHub matches
@@ -336,7 +446,7 @@ def final_dashboard(request):
         'skills': skills.split(','),
         'experience': years_of_experience,
         'recommendations': recommendations,
-        'ai_insights': mark_safe(markdown.markdown(ai_insights)),
+        'ai_insights': mark_safe(ai_insights),
         'quiz_data': [{'question': a.question.question_text, 'answer': a.answer_text} for a in answers],
         'similar_people': similar_people,
         'github_people': github_matches,
@@ -426,10 +536,11 @@ def get_ai_insights(request):
         answer_texts = [a.answer_text for a in answers]
         
         # Generate AI insights
-        ai_insights = get_ai_dashboard_insights(profile, answer_texts)
+        raw_insights = get_ai_dashboard_insights(profile, answer_texts)
+        formatted_insights = format_ai_insights(raw_insights)
         
         return JsonResponse({
-            'insights': mark_safe(markdown.markdown(ai_insights))
+            'insights': mark_safe(formatted_insights)
         })
     except UserProfile.DoesNotExist:
         return JsonResponse({'error': 'User profile not found'}, status=404)

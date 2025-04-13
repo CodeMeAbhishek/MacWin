@@ -15,13 +15,29 @@ def clean_markdown(text):
 
 def get_resume_feedback(resume_text):
     prompt = f"""
-Analyze the following resume and provide:
+Analyze the following resume and provide feedback in this format:
 
-1. Five specific improvement suggestions
-2. Three interview tips tailored to this resume
+<h2>Resume Analysis for [Name]</h2>
 
-Format your response with clear sections and bullet points.
-Avoid using markdown symbols - use plain text with simple formatting.
+<div class="section-heading">1. Improvement Suggestions:</div>
+<ul>
+<li>Quantify Accomplishments and Use Action Verbs: Instead of generic descriptions...</li>
+<li>Tailor Skills and Experiences to Target Roles: General skills like...</li>
+<li>Address Redundancy and Provide More Context: The resume contains...</li>
+</ul>
+
+<div class="section-heading">2. Interview Tips:</div>
+<ul>
+<li>First interview tip with specific details</li>
+<li>Second interview tip with specific details</li>
+<li>Third interview tip with specific details</li>
+</ul>
+
+Format each bullet point with clear, actionable advice.
+Use specific examples and metrics where possible.
+Use <strong>text</strong> for emphasis instead of **.
+Each bullet point should be wrapped in <li> tags.
+Group bullet points in <ul> tags.
 
 Resume:
 \"\"\"
@@ -29,13 +45,14 @@ Resume:
 \"\"\"
 """
     raw_response = generate_gemini_response(prompt)
-    cleaned_response = clean_markdown(raw_response)
-    html_response = markdown.markdown(cleaned_response)
-    return html_response
+    # Convert any remaining markdown-style bold to HTML
+    formatted_response = raw_response.replace('**', '<strong>', 1).replace('**', '</strong>', 1)
+    return formatted_response
 
 def generate_dynamic_questions(name, skills, experience):
-    # ...
+    prompt = f"Generate personalized questions for {name} with skills in {skills} and {experience} years of experience."
     print("Prompt to Gemini:\n", prompt)
+    response = generate_gemini_response(prompt)
     print("Raw Gemini Response:\n", response)
 
     questions = re.findall(r'\d+\.\s+(.*?)(?=\n\d+\.|\Z)', response.strip())

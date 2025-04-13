@@ -1,0 +1,580 @@
+{% extends 'advisor/base.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  
+  :root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --secondary: #6366f1;
+    --text-dark: #1e293b;
+    --text-light: #64748b;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+    background-color: #f8fafc;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: 
+      linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+      linear-gradient(45deg, transparent 50%, rgba(79, 70, 229, 0.1) 100%),
+      linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    position: relative;
+    text-align: center;
+    padding: 2rem;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.4) 0%, transparent 25%),
+      radial-gradient(circle at 80% 80%, rgba(79, 70, 229, 0.4) 0%, transparent 25%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .shape {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 50%;
+    animation: float 20s infinite;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .shape:nth-child(1) {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    left: -150px;
+    animation-delay: -2s;
+  }
+
+  .shape:nth-child(2) {
+    width: 200px;
+    height: 200px;
+    top: 50%;
+    right: -100px;
+    animation-delay: -5s;
+  }
+
+  .shape:nth-child(3) {
+    width: 150px;
+    height: 150px;
+    bottom: -75px;
+    left: 15%;
+    animation-delay: -7s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translate(50px, -30px) rotate(90deg) scale(1.1);
+    }
+    50% {
+      transform: translate(0, 50px) rotate(180deg) scale(1);
+    }
+    75% {
+      transform: translate(-50px, -25px) rotate(270deg) scale(0.9);
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+  }
+
+  .hero h1 {
+    font-size: 5.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #e0f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    opacity: 0;
+    transform: translateY(-30px);
+    animation: slideInDown 1s ease forwards;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  }
+
+  .hero p {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideInUp 1s ease 0.3s forwards;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideInUp 1s ease 0.6s forwards;
+  }
+
+  .btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    border: none;
+    padding: 1.2rem 3rem;
+    font-size: 1.1rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+  }
+
+  .btn:hover::before {
+    left: 100%;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+    box-shadow: none;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+  }
+
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+
+  .stats {
+    display: flex;
+    gap: 4rem;
+    justify-content: center;
+    margin-top: 4rem;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideInUp 1s ease 0.9s forwards;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #fff 0%, #e0f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-label {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .features {
+    padding: 8rem 2rem;
+    background: white;
+    position: relative;
+    margin-top: -2rem;
+  }
+
+  .features::before {
+    content: '';
+    position: absolute;
+    top: -6rem;
+    left: 0;
+    right: 0;
+    height: 6rem;
+    background: linear-gradient(to bottom right, transparent 49%, white 50%);
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 5rem;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .section-title.visible {
+    animation: slideInUp 1s ease forwards;
+  }
+
+  .section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+  }
+
+  .section-title p {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .feature-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .feature-card.visible {
+    animation: slideInUp 1s ease forwards;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-card img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    filter: invert(34%) sepia(42%) saturate(5048%) hue-rotate(231deg) brightness(101%) contrast(92%);
+  }
+
+  .feature-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+  }
+
+  .feature-card p {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+
+  .testimonials {
+    padding: 8rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  }
+
+  .testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .testimonial-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .testimonial-card.visible {
+    animation: slideInUp 1s ease forwards;
+  }
+
+  .testimonial-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .testimonial-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 1rem;
+  }
+
+  .testimonial-info h4 {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+  }
+
+  .testimonial-info p {
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  .testimonial-content {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+
+  .cta {
+    padding: 8rem 2rem;
+    background: white;
+    text-align: center;
+  }
+
+  .cta-content {
+    max-width: 800px;
+    margin: 0 auto;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .cta-content.visible {
+    animation: slideInUp 1s ease forwards;
+  }
+
+  .cta h2 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+  }
+
+  .cta p {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+  }
+
+  @keyframes slideInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInDown {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 3rem;
+    }
+    .hero p {
+      font-size: 1.2rem;
+    }
+    .stats {
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .features {
+      padding: 6rem 1rem;
+    }
+    .grid {
+      gap: 1.5rem;
+    }
+    .testimonial-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section class="hero">
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  <div class="hero-content">
+    <h1>MacWin Career Advisor</h1>
+    <p>Navigate Your Path to Professional Greatness with AI-Powered Career Guidance</p>
+    <div class="hero-buttons">
+      <a href="#features" class="btn">Explore Features <span>↓</span></a>
+      <a href="{% url 'home' %}" class="btn btn-outline">Get Started</a>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">10K+</div>
+        <div class="stat-label">Career Paths Analyzed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">95%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">AI Support</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="section-title">
+    <h2>Why Choose MacWin?</h2>
+    <p>Experience the future of career guidance with our cutting-edge AI technology</p>
+  </div>
+  <div class="grid">
+    <div class="feature-card">
+      <img src="https://img.icons8.com/ios-filled/100/ai.png" alt="AI" />
+      <h3>AI-Powered Guidance</h3>
+      <p>Get personalized career advice and insights powered by advanced artificial intelligence algorithms.</p>
+    </div>
+    <div class="feature-card">
+      <img src="https://img.icons8.com/ios-filled/100/resume.png" alt="Resume" />
+      <h3>Resume & Interview Tips</h3>
+      <p>Receive expert guidance on crafting the perfect resume and acing your interviews with confidence.</p>
+    </div>
+    <div class="feature-card">
+      <img src="https://img.icons8.com/ios-filled/100/data-configuration.png" alt="Market" />
+      <h3>Live Job Market Analysis</h3>
+      <p>Stay ahead with real-time industry trends and data-driven insights for your career development.</p>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="section-title">
+    <h2>Success Stories</h2>
+    <p>Hear from professionals who transformed their careers with MacWin</p>
+  </div>
+  <div class="testimonial-grid">
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <img src="https://i.pravatar.cc/150?img=11" alt="User" class="testimonial-avatar">
+        <div class="testimonial-info">
+          <h4>Sarah Johnson</h4>
+          <p>Software Engineer</p>
+        </div>
+      </div>
+      <div class="testimonial-content">
+        "MacWin's AI guidance helped me transition from marketing to tech. The personalized roadmap and interview prep were game-changers."
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <img src="https://i.pravatar.cc/150?img=3" alt="User" class="testimonial-avatar">
+        <div class="testimonial-info">
+          <h4>Michael Chen</h4>
+          <p>Data Scientist</p>
+        </div>
+      </div>
+      <div class="testimonial-content">
+        "The market analysis feature gave me invaluable insights into emerging tech trends. I landed my dream job within 2 months!"
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <img src="https://i.pravatar.cc/150?img=8" alt="User" class="testimonial-avatar">
+        <div class="testimonial-info">
+          <h4>Emma Davis</h4>
+          <p>Product Manager</p>
+        </div>
+      </div>
+      <div class="testimonial-content">
+        "The AI-powered resume tips helped me highlight my achievements effectively. Highly recommend for career changers!"
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-content">
+    <h2>Ready to Transform Your Career?</h2>
+    <p>Join thousands of professionals who have already accelerated their career growth with MacWin</p>
+    <a href="{% url 'home' %}" class="btn">Get Started Now →</a>
+  </div>
+</section>
+
+<script>
+  // Intersection Observer for animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.1
+  });
+
+  // Observe all animated elements
+  document.querySelectorAll('.section-title, .feature-card, .testimonial-card, .cta-content').forEach(el => {
+    observer.observe(el);
+  });
+</script>
+
+{% endblock %} 

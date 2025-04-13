@@ -1,4 +1,5 @@
 {% extends 'advisor/base.html' %}
+{% load static %}
 {% block content %}
 
 <div class="container history-container">
@@ -47,8 +48,8 @@
                       </div>
                     </td>
                     <td>
-                      <div class="advice-content">
-                        {{ item.advice|safe|linebreaks }}
+                      <div class="advice-content markdown-content">
+                        {{ item.advice|safe|linebreaksbr }}
                       </div>
                     </td>
                   </tr>
@@ -170,48 +171,63 @@
     background: rgba(var(--bs-info-rgb), 0.15);
   }
 
-  .advice-content {
+  .markdown-content {
     font-size: 0.95rem;
     line-height: 1.7;
     color: var(--bs-gray-800);
   }
 
-  .advice-content strong {
-    color: var(--bs-gray-900);
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4 {
+    color: var(--bs-primary);
     font-weight: 600;
-    display: inline-block;
-    margin-top: 0.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
   }
 
-  .advice-content p {
+  .markdown-content h1:first-child,
+  .markdown-content h2:first-child,
+  .markdown-content h3:first-child,
+  .markdown-content h4:first-child {
+    margin-top: 0;
+  }
+
+  .markdown-content p {
+    margin-bottom: 1rem;
+  }
+
+  .markdown-content ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 1rem 0;
+  }
+
+  .markdown-content li {
+    position: relative;
+    padding-left: 1.5rem;
     margin-bottom: 0.75rem;
   }
 
-  .advice-content ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0.75rem 0;
-  }
-
-  .advice-content li {
-    position: relative;
-    padding-left: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .advice-content li:before {
+  .markdown-content li:before {
     content: "•";
     position: absolute;
-    left: 0;
+    left: 0.5rem;
     color: var(--bs-primary);
     font-weight: bold;
   }
 
-  .dark-mode .advice-content {
+  .markdown-content strong {
+    color: var(--bs-gray-900);
+    font-weight: 600;
+  }
+
+  .dark-mode .markdown-content {
     color: var(--bs-gray-300);
   }
 
-  .dark-mode .advice-content strong {
+  .dark-mode .markdown-content strong {
     color: var(--bs-gray-100);
   }
 

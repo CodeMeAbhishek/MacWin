@@ -1,7 +1,260 @@
 {% extends 'advisor/base.html' %}
 {% block content %}
 
-<div class="container d-flex justify-content-center align-items-center">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  }
+
+  .container {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: 
+      linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+      linear-gradient(45deg, transparent 50%, rgba(79, 70, 229, 0.1) 100%);
+    position: relative;
+    overflow: hidden;
+    max-width: 100% !important;
+  }
+
+  .container::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.4) 0%, transparent 25%),
+      radial-gradient(circle at 80% 80%, rgba(79, 70, 229, 0.4) 0%, transparent 25%);
+    opacity: 0.5;
+    z-index: 0;
+  }
+
+  .neural-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.1;
+    z-index: 1;
+  }
+
+  .card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: cardFloat 2s ease-in-out infinite;
+  }
+
+  @keyframes cardFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .rocket-icon {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .form-label {
+    color: #1e293b;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .home-input, .home-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .home-input:focus, .home-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    outline: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.3s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+  }
+
+  .neural-dots {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .neural-dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    animation: glowPulse 2s infinite alternate;
+  }
+
+  @keyframes glowPulse {
+    from { box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+    to { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
+  }
+
+  .neural-line {
+    position: absolute;
+    background: linear-gradient(90deg, 
+      rgba(99, 102, 241, 0.2),
+      rgba(99, 102, 241, 0.4),
+      rgba(99, 102, 241, 0.2)
+    );
+    height: 2px;
+    transform-origin: left;
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .card {
+    animation: fadeInScale 0.5s ease forwards;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      0 0 40px rgba(79, 70, 229, 0.1),
+      0 0 80px rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .mb-3 {
+    position: relative;
+    z-index: 2;
+  }
+
+  h2 {
+    background: linear-gradient(135deg, #1e293b, #4f46e5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Add floating shapes */
+  .floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .shape {
+    position: absolute;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+    border-radius: 50%;
+    filter: blur(20px);
+    animation: floatShape 20s infinite linear;
+  }
+
+  .shape:nth-child(1) {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    left: -150px;
+    animation-delay: -5s;
+  }
+
+  .shape:nth-child(2) {
+    width: 400px;
+    height: 400px;
+    bottom: -200px;
+    right: -200px;
+    animation-delay: -10s;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(147, 51, 234, 0.15));
+  }
+
+  .shape:nth-child(3) {
+    width: 200px;
+    height: 200px;
+    top: 40%;
+    left: 60%;
+    animation-delay: -15s;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(168, 85, 247, 0.1));
+  }
+
+  @keyframes floatShape {
+    0% { transform: rotate(0deg) translate(50px) rotate(0deg); }
+    100% { transform: rotate(360deg) translate(50px) rotate(-360deg); }
+  }
+</style>
+
+<div class="container">
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  <div class="neural-bg"></div>
+  <div class="neural-dots" id="neuralDots"></div>
+  
   <div class="card shadow-lg p-4 w-100" style="max-width: 600px;">
     <div class="d-flex align-items-center justify-content-center mb-4">
       <div class="rocket-icon me-2">🚀</div>
@@ -62,69 +315,119 @@
   </div>
 </div>
 
-<style>
-  /* Home page dark mode styles */
-  .dark-mode .card {
-    background-color: #1f1f1f;
-    border-color: #333;
-  }
-  
-  .dark-mode .form-label {
-    color: #e0e0e0;
-  }
-  
-  .dark-mode .home-input,
-  .dark-mode .home-select {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #444;
-  }
-  
-  .dark-mode .home-input:focus,
-  .dark-mode .home-select:focus {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  }
-  
-  .dark-mode .home-input::placeholder {
-    color: #6c757d;
-  }
-  
-  .dark-mode .home-select option {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-  }
-  
-  .dark-mode .alert-danger {
-    background-color: #2c0b0e;
-    color: #ea868f;
-    border-color: #842029;
-  }
-  
-  .rocket-icon {
-    font-size: 2rem;
-    line-height: 1;
-  }
-  
-  /* Smooth transitions */
-  .card,
-  .form-control,
-  .form-select,
-  .btn,
-  .alert {
-    transition: all 0.3s ease;
-  }
-</style>
-
 <script>
+// Neural network animation
+function createNeuralAnimation() {
+  const container = document.querySelector('.neural-dots');
+  const dots = [];
+  const numDots = 40;  // Reduced number of dots for faster performance
+  const connectionDistance = 120;  // Increased connection distance
+
+  // Create dots
+  for (let i = 0; i < numDots; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'neural-dot';
+    dot.style.left = `${Math.random() * 100}%`;
+    dot.style.top = `${Math.random() * 100}%`;
+    container.appendChild(dot);
+    dots.push({
+      element: dot,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 1,  // Doubled speed
+      vy: (Math.random() - 0.5) * 1   // Doubled speed
+    });
+  }
+
+  function animate() {
+    // Update dot positions
+    dots.forEach(dot => {
+      dot.x += dot.vx;
+      dot.y += dot.vy;
+
+      // Bounce off walls
+      if (dot.x < 0 || dot.x > window.innerWidth) dot.vx *= -1;
+      if (dot.y < 0 || dot.y > window.innerHeight) dot.vy *= -1;
+
+      dot.element.style.transform = `translate(${dot.x}px, ${dot.y}px)`;
+    });
+
+    // Draw connections
+    const lines = container.querySelectorAll('.neural-line');
+    lines.forEach(line => line.remove());
+
+    dots.forEach((dot1, i) => {
+      dots.slice(i + 1).forEach(dot2 => {
+        const dx = dot2.x - dot1.x;
+        const dy = dot2.y - dot1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < connectionDistance) {
+          const line = document.createElement('div');
+          line.className = 'neural-line';
+          const angle = Math.atan2(dy, dx);
+          line.style.width = `${distance}px`;
+          line.style.left = `${dot1.x}px`;
+          line.style.top = `${dot1.y}px`;
+          line.style.transform = `rotate(${angle}rad)`;
+          line.style.opacity = 1 - (distance / connectionDistance);
+          container.appendChild(line);
+        }
+      });
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// Add particle effect
+function createParticles() {
+  const container = document.querySelector('.container');
+  const particlesContainer = document.createElement('div');
+  particlesContainer.style.position = 'absolute';
+  particlesContainer.style.width = '100%';
+  particlesContainer.style.height = '100%';
+  particlesContainer.style.pointerEvents = 'none';
+  particlesContainer.style.zIndex = '1';
+  container.appendChild(particlesContainer);
+
+  for (let i = 0; i < 50; i++) {
+    const particle = document.createElement('div');
+    particle.style.position = 'absolute';
+    particle.style.width = '2px';
+    particle.style.height = '2px';
+    particle.style.background = 'rgba(99, 102, 241, 0.3)';
+    particle.style.borderRadius = '50%';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.top = Math.random() * 100 + '%';
+    particle.style.animation = `particleFloat ${Math.random() * 3 + 2}s infinite ease-in-out`;
+    particlesContainer.appendChild(particle);
+  }
+}
+
+// Add particle animation
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(`
+  @keyframes particleFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(${Math.random() * 30}px, ${Math.random() * 30}px); }
+  }
+`, styleSheet.cssRules.length);
+
+// Start both animations
+window.addEventListener('load', () => {
+  createNeuralAnimation();
+  createParticles();
+});
+
+// Form validation and submission
 document.getElementById('careerForm').addEventListener('submit', function(e) {
     console.log('Form submitted');
     const form = e.target;
     const formData = new FormData(form);
     
-    // Log form data
     for (let pair of formData.entries()) {
         console.log(pair[0] + ': ' + pair[1]);
     }

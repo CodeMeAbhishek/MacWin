@@ -9,6 +9,122 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, transparent 50%, rgba(79, 70, 229, 0.1) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .neural-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.1;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .floating-shapes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .shape {
+      position: absolute;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+      border-radius: 50%;
+      filter: blur(20px);
+      animation: floatShape 20s infinite linear;
+    }
+
+    .shape:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      left: -150px;
+      animation-delay: -5s;
+    }
+
+    .shape:nth-child(2) {
+      width: 400px;
+      height: 400px;
+      bottom: -200px;
+      right: -200px;
+      animation-delay: -10s;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(147, 51, 234, 0.15));
+    }
+
+    .shape:nth-child(3) {
+      width: 200px;
+      height: 200px;
+      top: 40%;
+      left: 60%;
+      animation-delay: -15s;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(168, 85, 247, 0.1));
+    }
+
+    @keyframes floatShape {
+      0% { transform: rotate(0deg) translate(50px) rotate(0deg); }
+      100% { transform: rotate(360deg) translate(50px) rotate(-360deg); }
+    }
+
+    /* Modern Navbar Styles */
+    .navbar {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    /* Main Content Wrapper */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #ffffff;
@@ -214,6 +330,7 @@
       text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
       background: -webkit-linear-gradient(45deg, #6366f1, #8b5cf6);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -222,6 +339,7 @@
       text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
       background: -webkit-linear-gradient(45deg, #8b5cf6, #a78bfa);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -437,44 +555,6 @@
       color: #ffffff;
     }
 
-    /* Resume Analysis Styles */
-    .resume-analysis {
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 2rem;
-      transition: all 0.3s ease;
-    }
-
-    .dark-mode .resume-analysis {
-      background-color: #1e1e1e;
-    }
-
-    .dark-mode .ai-insights {
-      background-color: #1e1e1e;
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .dark-mode .career-path {
-      background-color: #1e1e1e;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Modern Navbar Styles */
-    .navbar {
-      background: linear-gradient(135deg, #2d3436 0%, #1a1f24 100%);
-      padding: 0.75rem 2rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      backdrop-filter: blur(10px);
-    }
-
-    .dark-mode .navbar {
-      background: linear-gradient(135deg, #1a1f24 0%, #121417 100%);
-    }
-
     .navbar-brand {
       display: flex;
       align-items: center;
@@ -544,15 +624,6 @@
       background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     }
 
-    /* Main Content Wrapper */
-    .main-content {
-      flex: 1;
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
     @media (max-width: 768px) {
       .navbar {
         padding: 0.75rem 1rem;
@@ -583,6 +654,13 @@
   </style>
 </head>
 <body id="pageBody" class="{{ theme_class }}{% if request.path == '/final-dashboard/' %} final-dashboard{% endif %}">
+  <div class="neural-bg"></div>
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  
   <nav class="navbar">
     <div class="container-fluid px-4">
       <a href="/" class="navbar-brand">
