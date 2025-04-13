@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,133 +6,609 @@
   <title>Intelligent Career Advisor</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    /* Light mode defaults */
     body {
+      font-family: 'Poppins', sans-serif;
       background-color: #ffffff;
       color: #212529;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    .card,
-    .list-group-item {
-      background-color: #ffffff;
-      color: #212529;
-      border-color: #dee2e6;
-    }
-
-    .form-control {
-      background-color: #ffffff;
-      color: #212529;
-    }
-
-    /* Dark mode overrides */
-    body.dark-mode {
+    .dark-mode {
       background-color: #121212;
-      color: #e0e0e0;
+      color: #ffffff;
     }
 
     .dark-mode .card,
-    .dark-mode .list-group-item,
-    .dark-mode .form-control {
-      background-color: #1f1f1f;
-      color: #e0e0e0;
-      border-color: #444;
+    .dark-mode .modal-content {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
     }
 
-    .dark-mode .btn,
-    .dark-mode .alert {
-      background-color: #333;
-      color: white;
-      border-color: #555;
+    .dark-mode .form-control,
+    .dark-mode .form-select,
+    .dark-mode textarea {
+      background-color: #2d2d2d;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
     }
 
-    /* Placeholder text */
-    input::placeholder,
-    textarea::placeholder {
-      color: rgba(0, 0, 0, 0.5);
-    }
-
-    .dark-mode input::placeholder,
-    .dark-mode textarea::placeholder {
+    .dark-mode .form-control::placeholder {
       color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Form elements */
-    input, textarea, select {
-      background-color: #fff;
-      color: #212529;
-      border: 1px solid #ced4da;
+    .dark-mode .form-control:focus,
+    .dark-mode .form-select:focus,
+    .dark-mode textarea:focus {
+      background-color: #363636;
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
     }
 
-    .dark-mode input,
-    .dark-mode textarea,
-    .dark-mode select {
-      background-color: #1f1f1f;
-      color: #fff;
-      border: 1px solid #444;
+    .dark-mode .btn-light {
+      background-color: #363636;
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
     }
 
-    /* Buttons */
-    button {
-      background-color: #3b82f6;
+    .dark-mode .btn-light:hover {
+      background-color: #404040;
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+    }
+
+    .dark-mode h1, 
+    .dark-mode h2, 
+    .dark-mode h3, 
+    .dark-mode h4, 
+    .dark-mode h5, 
+    .dark-mode h6,
+    .dark-mode p,
+    .dark-mode label {
+      color: #ffffff;
+    }
+
+    .dark-mode .text-muted {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    .dark-mode select option {
+      background-color: #2d2d2d;
+      color: #ffffff;
+    }
+
+    .dark-mode .table {
+      color: #e0e0e0;
+    }
+
+    .dark-mode .table td,
+    .dark-mode .table th {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dark-mode .border {
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Add transition effects to elements */
+    .card,
+    .modal-content,
+    .form-control,
+    .form-select,
+    textarea,
+    .btn,
+    .table,
+    .border {
+      transition: all 0.3s ease;
+    }
+
+    /* Quiz and Form Pages */
+    .quiz-container,
+    .form-container {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .dark-mode .quiz-container,
+    .dark-mode .form-container {
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Progress Section Styles */
+    .progress-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      padding: 3rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 2rem auto;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dark-mode .progress-section {
+      background: rgba(30, 30, 30, 0.95);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-ring {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin-bottom: 2.5rem;
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+      cx: 90;
+      cy: 90;
+      r: 80;
+      fill: none;
+      stroke: #6366f1;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 502.4;
+      stroke-dashoffset: 502.4;
+      transform-origin: center;
+      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.3));
+      animation: spin 2s linear infinite;
+    }
+
+    .progress-ring-bg {
+      cx: 90;
+      cy: 90;
+      r: 80;
+      fill: none;
+      stroke: #e5e7eb;
+      stroke-width: 8;
+      stroke-linecap: round;
+      opacity: 0.2;
+    }
+
+    .dark-mode .progress-ring-circle {
+      stroke: #8b5cf6;
+      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+    }
+
+    .dark-mode .progress-ring-bg {
+      stroke: #4a5568;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(90deg);
+      font-size: 2rem;
+      font-weight: 600;
+      color: #6366f1;
+      text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+      background: -webkit-linear-gradient(45deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dark-mode .progress-text {
+      color: #8b5cf6;
+      text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+      background: -webkit-linear-gradient(45deg, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .progress-message {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 1.5rem 0;
+      color: #4b5563;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .dark-mode .progress-message {
+      color: #e0e0e0;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-container {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2.5rem;
+      position: relative;
+      padding: 1rem;
+    }
+
+    .step-container::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 2px;
+      background: #e5e7eb;
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+
+    .dark-mode .step-container::before {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #6b7280;
+      font-size: 1rem;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+      background: #ffffff;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      border: 2px solid #e5e7eb;
+    }
+
+    .dark-mode .step-item {
+      background: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .step-item.active {
+      color: #6366f1;
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+      transform: scale(1.05);
+    }
+
+    .dark-mode .step-item.active {
+      color: #8b5cf6;
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    /* AI Theme Animation */
+    .ai-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.5;
+      z-index: 0;
+    }
+
+    .dark-mode .ai-particles {
+      opacity: 0.3;
+    }
+
+    .particle {
+      position: absolute;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 50%;
+      filter: blur(1px);
+      animation: float 4s infinite ease-in-out;
+    }
+
+    .dark-mode .particle {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+      }
+      25% {
+        transform: translateY(-15px) translateX(10px) scale(1.2);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translateY(-25px) translateX(15px) scale(1.4);
+        opacity: 0.8;
+      }
+      75% {
+        transform: translateY(-15px) translateX(20px) scale(1.2);
+        opacity: 0.5;
+      }
+    }
+
+    /* History and Tips Pages */
+    .dark-mode .history-card,
+    .dark-mode .tip-card {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-mode .history-card:hover,
+    .dark-mode .tip-card:hover {
+      background-color: #252525;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Dashboard Components */
+    .dark-mode .dashboard-card {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dark-mode .dashboard-stat {
+      background-color: #252525;
+      color: #ffffff;
+    }
+
+    .dark-mode .stat-value {
+      color: #6366f1;
+    }
+
+    /* List Groups and Dropdowns */
+    .dark-mode .list-group-item {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .dark-mode .dropdown-menu {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dark-mode .dropdown-item {
+      color: #ffffff;
+    }
+
+    .dark-mode .dropdown-item:hover {
+      background-color: #252525;
+      color: #ffffff;
+    }
+
+    /* Alerts and Notifications */
+    .dark-mode .alert {
+      background-color: #252525;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .dark-mode .alert-success {
+      background-color: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .dark-mode .alert-warning {
+      background-color: rgba(234, 179, 8, 0.2);
+      border-color: rgba(234, 179, 8, 0.3);
+      color: #fde047;
+    }
+
+    .dark-mode .alert-danger {
+      background-color: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    /* Icons and Badges */
+    .dark-mode .bi {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .dark-mode .badge {
+      background-color: #363636;
+      color: #ffffff;
+    }
+
+    /* Resume Analysis Styles */
+    .resume-analysis {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .dark-mode .resume-analysis {
+      background-color: #1e1e1e;
+    }
+
+    .dark-mode .ai-insights {
+      background-color: #1e1e1e;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dark-mode .career-path {
+      background-color: #1e1e1e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Modern Navbar Styles */
+    .navbar {
+      background: linear-gradient(135deg, #2d3436 0%, #1a1f24 100%);
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .dark-mode .navbar {
+      background: linear-gradient(135deg, #1a1f24 0%, #121417 100%);
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white !important;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      transform: translateY(-1px);
+    }
+
+    .brand-logo {
+      height: 40px;
+      width: 40px;
+      border-radius: 12px;
+      padding: 0.25rem;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover .brand-logo {
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(5deg);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.1);
       color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-decoration: none;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+      color: white;
+    }
+
+    .nav-btn i {
+      font-size: 1.1rem;
+    }
+
+    .theme-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       border: none;
     }
 
-    .dark-mode button {
-      background-color: #2563eb;
-      color: white;
+    .theme-btn:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     }
 
-    /* Links */
-    a {
-      color: #0d6efd;
+    /* Main Content Wrapper */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
     }
 
-    .dark-mode a {
-      color: #6ea8fe;
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+
+      .nav-buttons {
+        gap: 0.5rem;
+      }
+
+      .nav-btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+      }
+
+      .nav-btn i {
+        font-size: 1rem;
+      }
+
+      .brand-logo {
+        height: 32px;
+        width: 32px;
+      }
+
+      .navbar-brand {
+        font-size: 1.25rem;
+      }
     }
-
-    /* Theme toggle */
-    .theme-toggle {
-      cursor: pointer;
-    }
-
-    /* Ensure text contrast in both themes */
-    .text-primary { color: #0d6efd !important; }
-    .text-secondary { color: #6c757d !important; }
-    .text-success { color: #198754 !important; }
-    .text-danger { color: #dc3545 !important; }
-    .text-warning { color: #ffc107 !important; }
-    .text-info { color: #0dcaf0 !important; }
-
-    .dark-mode .text-primary { color: #6ea8fe !important; }
-    .dark-mode .text-secondary { color: #a7acb1 !important; }
-    .dark-mode .text-success { color: #75b798 !important; }
-    .dark-mode .text-danger { color: #ea868f !important; }
-    .dark-mode .text-warning { color: #ffda6a !important; }
-    .dark-mode .text-info { color: #6edff6 !important; }
   </style>
 </head>
-<body id="pageBody" class="{{ theme_class }}">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="/">Career Advisor</a>
-      <div class="d-flex align-items-center">
-        <a href="/resume-tips" class="btn btn-outline-light btn-sm me-2">
-          <i class="bi bi-file-earmark-person-fill me-1"></i> Resume Tips
+<body id="pageBody" class="{{ theme_class }}{% if request.path == '/final-dashboard/' %} final-dashboard{% endif %}">
+  <nav class="navbar">
+    <div class="container-fluid px-4">
+      <a href="/" class="navbar-brand">
+        <img src="{% static 'images/imge2.jpg' %}" alt="Logo" class="brand-logo">
+        Career Advisor
+      </a>
+      <div class="nav-buttons">
+        <a href="/resume-tips" class="nav-btn">
+          <i class="bi bi-file-earmark-person"></i>
+          Resume Tips
         </a>
-        <a href="/history" class="btn btn-outline-light btn-sm me-2">
-          <i class="bi bi-clock-history me-1"></i> Advice History
+        <a href="/history" class="nav-btn">
+          <i class="bi bi-clock-history"></i>
+          Advice History
         </a>
-        <button class="btn btn-outline-light btn-sm" onclick="toggleTheme()">
-          <i class="bi bi-circle-half"></i> Theme
+        <button class="nav-btn theme-btn" onclick="toggleTheme()">
+          <i class="bi bi-circle-half"></i>
+          Theme
         </button>
       </div>
     </div>
   </nav>
 
-  {% block content %}{% endblock %}
+  <div class="main-content">
+    {% block content %}{% endblock %}
+  </div>
 
   <script>
     function toggleTheme() {
@@ -140,7 +617,6 @@
       const theme = body.classList.contains("dark-mode") ? "dark" : "light";
       localStorage.setItem("theme", theme);
       
-      // Sync with Django session
       fetch('/set-theme/', {
         method: 'POST',
         headers: {
@@ -172,6 +648,193 @@
         document.getElementById("pageBody").classList.add("dark-mode");
       }
     };
+
+    // Progress Animation Functions
+    function createParticles() {
+      const particlesContainer = document.createElement('div');
+      particlesContainer.className = 'ai-particles';
+      
+      // Create particles with different sizes
+      const sizes = [4, 6, 8, 10];
+      const count = 40;
+      
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random size from sizes array
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation delay and duration
+        const delay = Math.random() * 2;
+        const duration = 3 + Math.random() * 2;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+      
+      return particlesContainer;
+    }
+
+    function setProgress(percent) {
+      const circle = document.querySelector('.progress-ring-circle');
+      const text = document.querySelector('.progress-text');
+      if (!circle || !text) return;
+
+      const radius = circle.r.baseVal.value;
+      const circumference = radius * 2 * Math.PI;
+      
+      // Calculate the offset
+      const offset = circumference - (percent / 100) * circumference;
+      
+      // Update the circle
+      circle.style.strokeDasharray = `${circumference} ${circumference}`;
+      circle.style.strokeDashoffset = offset;
+      circle.style.transition = 'stroke-dashoffset 0.5s ease';
+      
+      // Animate the text counter with gradient effect
+      animateCounter(text, percent);
+    }
+
+    function animateCounter(element, target) {
+      const duration = 1000;
+      const start = parseInt(element.textContent) || 0;
+      const startTime = performance.now();
+      
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const current = Math.round(start + (target - start) * progress);
+        element.textContent = `${current}%`;
+        
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+      
+      requestAnimationFrame(update);
+    }
+
+    function updateProgressMessage(message) {
+      const messageElement = document.querySelector('.progress-message');
+      if (!messageElement) return;
+      
+      messageElement.style.opacity = '0';
+      setTimeout(() => {
+        messageElement.textContent = message;
+        messageElement.style.opacity = '1';
+      }, 300);
+    }
+
+    function updateSteps(step) {
+      document.querySelectorAll('.step-item').forEach((item, index) => {
+        if (index < step) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // Function to create progress section HTML
+    function createProgressSection() {
+      const progressSection = document.createElement('div');
+      progressSection.className = 'progress-section';
+      progressSection.innerHTML = `
+        <svg class="progress-ring" width="180" height="180">
+          <circle class="progress-ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="progress-ring-circle" cx="90" cy="90" r="80"/>
+        </svg>
+        <div class="progress-text">0%</div>
+        <h2 class="progress-message">Analyzing your responses...</h2>
+        <div class="step-container">
+          <div class="step-item active">
+            <i class="bi bi-collection"></i>
+            Collecting
+          </div>
+          <div class="step-item">
+            <i class="bi bi-graph-up"></i>
+            Analyzing
+          </div>
+          <div class="step-item">
+            <i class="bi bi-stars"></i>
+            Generating
+          </div>
+        </div>
+      `;
+      
+      // Add AI particles
+      progressSection.appendChild(createParticles());
+      return progressSection;
+    }
+
+    // Function to start progress animation
+    function startProgressAnimation() {
+      const initialContent = document.querySelector('.initial-content');
+      if (!initialContent) return;
+
+      const progressSection = createProgressSection();
+      initialContent.parentNode.insertBefore(progressSection, initialContent);
+      initialContent.style.display = 'none';
+      
+      // Smoother progress animation
+      let progress = 0;
+      const interval = setInterval(() => {
+        // Accelerate progress between steps
+        const increment = progress < 33 ? 0.5 : 
+                         progress < 66 ? 0.6 : 0.7;
+        
+        progress += increment;
+        setProgress(Math.min(progress, 100));
+        
+        if (progress >= 33 && progress < 34) {
+          updateProgressMessage('Analyzing career patterns...');
+          updateSteps(2);
+        } else if (progress >= 66 && progress < 67) {
+          updateProgressMessage('Generating personalized insights...');
+          updateSteps(3);
+        } else if (progress >= 100) {
+          clearInterval(interval);
+          // Add a small delay before redirecting
+          setTimeout(() => {
+            window.location.href = '/final-dashboard/';
+          }, 1500);
+        }
+      }, 40);
+    }
+
+    // Check if we're on a quiz page and handle form submission
+    if (window.location.pathname.includes('quiz')) {
+      const form = document.querySelector('form');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          startProgressAnimation();
+          
+          // Submit form data in the background
+          const formData = new FormData(form);
+          try {
+            await fetch(form.action, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+              }
+            });
+          } catch (error) {
+            console.error('Error submitting form:', error);
+          }
+        });
+      }
+    }
   </script>
 </body>
 </html>

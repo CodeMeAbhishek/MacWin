@@ -1,87 +1,269 @@
 {% extends 'advisor/base.html' %}
 {% block content %}
 
-<div class="container mt-4">
-  <div class="card p-4 shadow-lg">
-    <div class="d-flex align-items-center mb-4">
-      <div class="history-icon me-3">🕘</div>
-      <h3 class="mb-0">Your Past Career Insights</h3>
-    </div>
-
-    {% if history %}
-      <div class="list-group history-list">
-        {% for item in history %}
-          <div class="list-group-item history-item mb-3 rounded">
-            <h6 class="fw-bold timestamp">{{ item.timestamp|date:"M d, Y - H:i" }}</h6>
-            <p><strong>Skills:</strong> {{ item.skills }}</p>
-            <p><strong>Experience:</strong> {{ item.experience }} years</p>
-            <div class="alert history-advice mt-2" style="white-space: pre-wrap;">
-              {{ item.advice|safe }}
-            </div>
+<div class="container history-container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10 mx-auto">
+      <div class="card shadow-lg p-4">
+        <div class="text-center mb-5">
+          <div class="history-icon-wrapper mb-3">
+            <i class="bi bi-clock-history history-icon"></i>
           </div>
-        {% endfor %}
+          <h2 class="fw-bold mb-2">Past Career Insights</h2>
+          <p class="text-muted">Your previous career advice history</p>
+        </div>
+
+        {% if history %}
+          <div class="table-responsive">
+            <table class="table table-hover advice-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 180px;">Date & Time</th>
+                  <th scope="col" style="width: 100px;">Experience</th>
+                  <th scope="col" style="width: 200px;">Skills</th>
+                  <th scope="col">Career Advice</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in history %}
+                  <tr class="advice-row">
+                    <td>
+                      <div class="date-time">
+                        <div class="date">{{ item.timestamp|date:"M d, Y" }}</div>
+                        <div class="time text-muted">{{ item.timestamp|date:"H:i" }}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="exp-badge">
+                        <i class="bi bi-briefcase me-1"></i>
+                        {{ item.experience }} years
+                      </span>
+                    </td>
+                    <td>
+                      <div class="skills-list">
+                        {% for skill in item.skills.split %}
+                          <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="advice-content">
+                        {{ item.advice|safe|linebreaks }}
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state text-center py-5">
+            <div class="empty-icon mb-3">
+              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+            </div>
+            <h3 class="fw-bold mb-2">No History Yet</h3>
+            <p class="text-muted">Try analyzing your resume to get personalized career advice.</p>
+            <a href="/resume-tips" class="btn btn-primary mt-3">
+              <i class="bi bi-file-text me-2"></i>Analyze Resume
+            </a>
+          </div>
+        {% endif %}
       </div>
-    {% else %}
-      <p class="text-muted">No advice history yet. Try submitting your details from the home page.</p>
-    {% endif %}
+    </div>
   </div>
 </div>
 
 <style>
-  /* History page dark mode styles */
-  .dark-mode .card {
-    background-color: #1f1f1f;
-    border-color: #333;
+  .history-container {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
   }
-  
-  .dark-mode .text-muted {
-    color: #adb5bd !important;
+
+  .history-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-rgb, 13, 110, 253) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
   }
-  
-  .dark-mode .history-item {
-    background-color: #2d2d2d;
-    border-color: #444;
-    color: #e0e0e0;
-  }
-  
-  .dark-mode .timestamp {
-    color: #6ea8fe;
-  }
-  
-  .dark-mode .history-advice {
-    background-color: #1c2a38;
-    color: #6ea8fe;
-    border-color: #084298;
-  }
-  
+
   .history-icon {
-    font-size: 2rem;
-    line-height: 1;
+    font-size: 1.75rem;
+    color: white;
   }
-  
-  /* Smooth transitions */
-  .card,
-  .list-group-item,
-  .alert {
-    transition: all 0.3s ease;
+
+  .advice-table {
+    margin-bottom: 0;
+    vertical-align: middle;
   }
-  
-  /* List group spacing */
-  .history-list {
-    gap: 1rem;
+
+  .advice-table thead th {
+    background: rgba(var(--bs-primary-rgb), 0.03);
+    border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.1);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--bs-gray-700);
   }
-  
-  .history-item {
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .dark-mode .advice-table thead th {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: var(--bs-gray-300);
   }
-  
-  .history-advice {
-    margin: 1rem -1rem -1rem -1rem;
-    border-radius: 0 0 0.5rem 0.5rem;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
+
+  .advice-row td {
+    padding: 1.25rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .dark-mode .advice-row td {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .date-time {
+    white-space: nowrap;
+  }
+
+  .date {
+    color: var(--bs-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .time {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+
+  .exp-badge {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    padding: 0.4rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .skill-tag {
+    background: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-info);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .dark-mode .skill-tag {
+    background: rgba(var(--bs-info-rgb), 0.15);
+  }
+
+  .advice-content {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--bs-gray-800);
+  }
+
+  .advice-content strong {
+    color: var(--bs-gray-900);
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .advice-content p {
+    margin-bottom: 0.75rem;
+  }
+
+  .advice-content ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0.75rem 0;
+  }
+
+  .advice-content li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .advice-content li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--bs-primary);
+    font-weight: bold;
+  }
+
+  .dark-mode .advice-content {
+    color: var(--bs-gray-300);
+  }
+
+  .dark-mode .advice-content strong {
+    color: var(--bs-gray-100);
+  }
+
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+
+  .empty-icon {
+    opacity: 0.5;
+  }
+
+  @media (max-width: 768px) {
+    .history-container {
+      padding: 1rem;
+    }
+
+    .advice-table thead {
+      display: none;
+    }
+
+    .advice-row {
+      display: block;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+    }
+
+    .advice-row td {
+      display: block;
+      padding: 0.5rem 0;
+      border: none;
+    }
+
+    .advice-row td:not(:last-child) {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      margin-bottom: 0.5rem;
+    }
+
+    .dark-mode .advice-row {
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .dark-mode .advice-row td:not(:last-child) {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  @media (min-width: 992px) {
+    .history-container {
+      padding: 3rem 0;
+    }
   }
 </style>
 

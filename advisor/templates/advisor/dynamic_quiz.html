@@ -2,34 +2,57 @@
 {% block content %}
 
 <div class="container">
-  <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
-    <div class="d-flex align-items-center mb-3">
-      <div class="brain-icon me-3">🧠</div>
-      <h2 class="mb-0">Personalized Career Quiz</h2>
-    </div>
-    <p class="text-muted mb-4">Answer these questions to help us understand your goals.</p>
-
-    <form method="post">
-      {% csrf_token %}
-      {% for question in questions %}
-        <div class="mb-4">
-          <label class="form-label fw-semibold">{{ question.question_text }}</label>
-          <textarea 
-            name="answer_{{ question.id }}" 
-            rows="3" 
-            required
-            class="form-control quiz-textarea"
-            placeholder="Type your answer here..."
-          ></textarea>
-        </div>
-      {% endfor %}
-
-      <div class="d-grid mt-4">
-        <button type="submit" class="btn btn-primary btn-lg fw-bold">
-          Submit Answers <i class="bi bi-check-circle ms-2"></i>
-        </button>
+  <div class="initial-content">
+    <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
+      <div class="d-flex align-items-center mb-3">
+        <div class="brain-icon me-3">🧠</div>
+        <h2 class="mb-0">Personalized Career Quiz</h2>
       </div>
-    </form>
+      <p class="text-muted mb-4">Answer these questions to help us understand your goals.</p>
+
+      <form method="post" id="quizForm">
+        {% csrf_token %}
+        {% for question in questions %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold">{{ question.question_text }}</label>
+            <textarea 
+              name="answer_{{ question.id }}" 
+              rows="3" 
+              required
+              class="form-control quiz-textarea"
+              placeholder="Type your answer here..."
+            ></textarea>
+          </div>
+        {% endfor %}
+
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-primary btn-lg fw-bold">
+            Submit Answers <i class="bi bi-check-circle ms-2"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Animation Section -->
+  <div class="progress-section" style="display: none;">
+    <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
+      <div class="text-center">
+        <div class="progress-ring">
+          <svg class="progress-ring-circle" width="120" height="120">
+            <circle class="progress-ring-circle-bg" cx="60" cy="60" r="54" />
+            <circle class="progress-ring-circle" cx="60" cy="60" r="54" />
+          </svg>
+          <div class="progress-text">0%</div>
+        </div>
+        <h3 class="progress-message mt-4">Analyzing your responses...</h3>
+        <div class="steps mt-4">
+          <div class="step-item active">Collecting responses</div>
+          <div class="step-item">Analyzing patterns</div>
+          <div class="step-item">Generating insights</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -45,6 +68,11 @@
   }
   
   .dark-mode .form-label {
+    color: #e0e0e0;
+  }
+  
+  .dark-mode h2,
+  .dark-mode h3 {
     color: #e0e0e0;
   }
   
@@ -80,6 +108,90 @@
     line-height: 1;
   }
   
+  /* Progress Ring Styles */
+  .progress-section {
+    display: none;
+  }
+
+  .progress-ring {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+  }
+
+  .progress-ring-circle {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+
+  .progress-ring-circle circle {
+    stroke-width: 4px;
+    fill: transparent;
+  }
+
+  .progress-ring-circle-bg {
+    stroke: rgba(99, 102, 241, 0.1);
+  }
+
+  .progress-ring-circle {
+    stroke: #6366f1;
+    transition: stroke-dashoffset 0.3s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #6366f1;
+  }
+
+  .progress-message {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #4b5563;
+  }
+
+  .dark-mode .progress-message {
+    color: #e5e7eb;
+  }
+
+  /* Steps Styles */
+  .steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding: 0 1rem;
+  }
+
+  .step-item {
+    position: relative;
+    padding: 0.5rem 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    transition: all 0.3s ease;
+  }
+
+  .step-item.active {
+    background: #6366f1;
+    color: white;
+  }
+
+  .dark-mode .step-item {
+    background: rgba(99, 102, 241, 0.2);
+    color: #9ca3af;
+  }
+
+  .dark-mode .step-item.active {
+    background: #6366f1;
+    color: white;
+  }
+  
   /* Smooth transitions */
   .card,
   .form-control,
@@ -87,5 +199,64 @@
     transition: all 0.3s ease;
   }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quizForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show progress animation
+        document.querySelector('.initial-content').style.display = 'none';
+        document.querySelector('.progress-section').style.display = 'block';
+        
+        // Start progress animation
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 1;
+            updateProgress(progress);
+            
+            if (progress === 33) {
+                updateProgressMessage('Analyzing career patterns...');
+                updateSteps(2);
+            } else if (progress === 66) {
+                updateProgressMessage('Generating personalized recommendations...');
+                updateSteps(3);
+            } else if (progress === 100) {
+                clearInterval(interval);
+                // Submit the form
+                form.submit();
+            }
+        }, 50);
+    });
+    
+    function updateProgress(percent) {
+        const circle = document.querySelector('.progress-ring-circle');
+        const text = document.querySelector('.progress-text');
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        text.textContent = `${Math.round(percent)}%`;
+    }
+    
+    function updateProgressMessage(message) {
+        document.querySelector('.progress-message').textContent = message;
+    }
+    
+    function updateSteps(step) {
+        document.querySelectorAll('.step-item').forEach((item, index) => {
+            if (index < step) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+});
+</script>
 
 {% endblock %}

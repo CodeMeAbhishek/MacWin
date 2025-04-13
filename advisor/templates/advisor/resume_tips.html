@@ -1,85 +1,151 @@
 {% extends 'advisor/base.html' %}
 {% block content %}
 
-<div class="container">
-  <div class="card shadow-lg p-4 mx-auto mt-4" style="max-width: 720px;">
-    <div class="d-flex align-items-center mb-3">
-      <div class="resume-icon me-3">📄</div>
-      <h2 class="mb-0">Resume & Interview Advice</h2>
+<div class="container resume-container">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8 mx-auto">
+      <div class="card shadow-lg p-4">
+        <div class="text-center mb-4">
+          <div class="resume-icon-wrapper mb-3">
+            <i class="bi bi-file-text resume-icon"></i>
+          </div>
+          <h2 class="fw-bold mb-2">Resume Analysis</h2>
+          <p class="text-muted">Get instant AI feedback on your resume</p>
+        </div>
+
+        <form method="post" class="resume-form">
+          {% csrf_token %}
+          <div class="mb-4">
+            <textarea 
+              name="resume_text" 
+              class="form-control resume-textarea" 
+              rows="12"
+              placeholder="Paste your resume text here..." 
+              required
+            ></textarea>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-magic me-2"></i>Analyze Resume
+            </button>
+          </div>
+        </form>
+
+        {% if feedback %}
+        <div class="mt-4 feedback-section">
+          <h3 class="fw-bold mb-3 feedback-title">
+            <i class="bi bi-lightbulb me-2"></i>AI Feedback
+          </h3>
+          <div class="feedback-content p-4">
+            {{ feedback|safe }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
     </div>
-    <p class="text-muted mb-4">Paste your resume below and get smart feedback from our AI advisor.</p>
-
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3">
-        <textarea 
-          name="resume_text" 
-          class="form-control resume-textarea" 
-          rows="8"
-          placeholder="Paste your resume text here..." 
-          required
-        ></textarea>
-      </div>
-      <div class="d-grid">
-        <button type="submit" class="btn btn-primary btn-lg fw-bold">
-          Get Tips <i class="bi bi-stars ms-1"></i>
-        </button>
-      </div>
-    </form>
-
-    {% if feedback %}
-      <div class="alert alert-success mt-4 feedback-alert" style="white-space: pre-wrap;">
-        {{ feedback|safe }}
-      </div>
-    {% endif %}
   </div>
 </div>
 
 <style>
-  /* Resume tips dark mode styles */
+  .resume-container {
+    padding: 2rem 1rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .resume-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-rgb, 13, 110, 253) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+
+  .resume-icon {
+    font-size: 1.75rem;
+    color: white;
+  }
+
+  .resume-textarea {
+    border-radius: 12px;
+    resize: vertical;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .resume-textarea:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+  }
+
+  .feedback-section {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .feedback-title {
+    font-size: 1.25rem;
+    color: var(--bs-primary);
+  }
+
+  .feedback-content {
+    background: rgba(var(--bs-primary-rgb), 0.03);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .btn-primary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
+  }
+
+  /* Dark mode styles */
   .dark-mode .card {
-    background-color: #1f1f1f;
+    background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+    border: none;
+  }
+
+  .dark-mode .resume-textarea {
+    background-color: #242424;
+    color: #e0e0e0;
     border-color: #333;
   }
-  
-  .dark-mode .text-muted {
-    color: #adb5bd !important;
-  }
-  
-  .dark-mode .resume-textarea {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #444;
-  }
-  
+
   .dark-mode .resume-textarea:focus {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    background-color: #242424;
+    border-color: var(--bs-primary);
   }
-  
-  .dark-mode .resume-textarea::placeholder {
-    color: #6c757d;
+
+  .dark-mode .feedback-section {
+    border-top-color: rgba(255, 255, 255, 0.1);
   }
-  
-  .dark-mode .feedback-alert {
-    background-color: #051b11;
-    color: #75b798;
-    border-color: #0f5132;
+
+  .dark-mode .feedback-content {
+    background: rgba(255, 255, 255, 0.03);
   }
-  
-  .resume-icon {
-    font-size: 2rem;
-    line-height: 1;
+
+  .dark-mode .text-muted {
+    color: #9ca3af !important;
   }
-  
-  /* Smooth transitions */
-  .card,
-  .form-control,
-  .btn,
-  .alert {
-    transition: all 0.3s ease;
+
+  @media (min-width: 992px) {
+    .resume-container {
+      padding: 3rem 0;
+    }
   }
 </style>
 

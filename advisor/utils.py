@@ -2,12 +2,26 @@ import markdown
 from .gemini import generate_gemini_response
 import re
 
+def clean_markdown(text):
+    # Remove excessive asterisks and other markdown artifacts
+    text = re.sub(r'\*\*Note:\*\*', 'Note:', text)
+    text = re.sub(r'\*\*Path \d+:', 'Path:', text)
+    text = re.sub(r'\*\*Required Skills', 'Required Skills', text)
+    text = re.sub(r'\*\*Suitability:\*\*', 'Suitability:', text)
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\#{2,}', '', text)  # Remove multiple hashtags
+    text = re.sub(r'\*\s+', '• ', text)  # Convert asterisk lists to bullet points
+    return text
+
 def get_resume_feedback(resume_text):
     prompt = f"""
-You are a highly experienced career advisor. Carefully review the following resume content.
+Analyze the following resume and provide:
 
-1. Give 5 improvement suggestions in bullet points.
-2. Then, provide 3 smart interview tips tailored to this resume.
+1. Five specific improvement suggestions
+2. Three interview tips tailored to this resume
+
+Format your response with clear sections and bullet points.
+Avoid using markdown symbols - use plain text with simple formatting.
 
 Resume:
 \"\"\"
@@ -15,7 +29,8 @@ Resume:
 \"\"\"
 """
     raw_response = generate_gemini_response(prompt)
-    html_response = markdown.markdown(raw_response)
+    cleaned_response = clean_markdown(raw_response)
+    html_response = markdown.markdown(cleaned_response)
     return html_response
 
 def generate_dynamic_questions(name, skills, experience):

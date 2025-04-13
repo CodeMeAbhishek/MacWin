@@ -1,25 +1,37 @@
 {% extends 'advisor/base.html' %}
 {% block content %}
 
-<div class="container">
-  <div class="card shadow-lg p-4 mx-auto mt-5" style="max-width: 720px;">
-    <h2 class="mb-3">📋 Quiz Question</h2>
-    <p class="text-muted mb-4">Answer this question to continue your personalized journey.</p>
-
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label class="form-label fw-semibold">{{ question.question_text }}</label>
-        <textarea name="answer" rows="4" class="form-control" placeholder="Type your answer here..." required></textarea>
+<div class="container mt-5">
+  <form method="post" action="{% url 'submit_answers' %}" id="quiz-form">
+    {% csrf_token %}
+    {% for question in questions %}
+      <div class="card mb-4 quiz-card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">{{ question.question_text }}</h5>
+          <textarea 
+            name="answer_{{ question.id }}" 
+            class="form-control" 
+            rows="4" 
+            required 
+            placeholder="Type your answer here..."
+          ></textarea>
+        </div>
       </div>
-
-      <div class="d-grid">
-        <button type="submit" class="btn btn-success fw-bold">
-          Submit Answer <i class="bi bi-arrow-right-circle ms-1"></i>
-        </button>
-      </div>
-    </form>
-  </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-lg w-100 mb-5">Submit Answers</button>
+  </form>
 </div>
+
+<style>
+  .quiz-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  .quiz-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+</style>
 
 {% endblock %}

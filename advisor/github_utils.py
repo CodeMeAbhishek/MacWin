@@ -11,6 +11,8 @@ def find_similar_github_users(user_skills, max_users=10):
 
     # Convert user skills to lowercase set for consistent comparison
     user_skills_set = set(skill.strip().lower() for skill in user_skills)
+    logger.info(f"Looking for GitHub users with skills: {user_skills_set}")
+    
     headers = {'Authorization': f'token {settings.GITHUB_TOKEN}'}
     all_users = []
 
@@ -23,12 +25,16 @@ def find_similar_github_users(user_skills, max_users=10):
         
         for query in queries:
             url = f"https://api.github.com/search/users?q={query}&per_page=10"
+            logger.info(f"Searching GitHub with query: {url}")
             try:
                 response = requests.get(url, headers=headers)
                 response.raise_for_status()
                 
                 if response.status_code == 200:
-                    for item in response.json().get('items', []):
+                    items = response.json().get('items', [])
+                    logger.info(f"Found {len(items)} initial matches for {skill}")
+                    
+                    for item in items:
                         try:
                             user_data = requests.get(item['url'], headers=headers)
                             user_data.raise_for_status()
@@ -41,24 +47,28 @@ def find_similar_github_users(user_skills, max_users=10):
                                 if repos_url:
                                     repos_response = requests.get(repos_url, headers=headers)
                                     if repos_response.status_code == 200:
-                                        for repo in repos_response.json():
+                                        repos = repos_response.json()
+                                        logger.info(f"Found {len(repos)} repositories for user {user_info['login']}")
+                                        for repo in repos:
                                             lang = repo.get('language')
                                             if lang:
                                                 languages.add(lang.lower())
                                 
                                 # Find common skills between user and GitHub user
                                 common_skills = list(user_skills_set & languages)
+                                logger.info(f"User {user_info['login']} has common skills: {common_skills}")
                                 
-                                all_users.append({
-                                    'login': user_info['login'],
-                                    'html_url': user_info['html_url'],
-                                    'public_repos': user_info.get('public_repos', 0),
-                                    'followers': user_info.get('followers', 0),
-                                    'location': user_info.get('location'),
-                                    'bio': user_info.get('bio'),
-                                    'avatar_url': user_info.get('avatar_url'),
-                                    'common_skills': common_skills,
-                                })
+                                if common_skills:  # Only add users with at least one common skill
+                                    all_users.append({
+                                        'login': user_info['login'],
+                                        'html_url': user_info['html_url'],
+                                        'public_repos': user_info.get('public_repos', 0),
+                                        'followers': user_info.get('followers', 0),
+                                        'location': user_info.get('location'),
+                                        'bio': user_info.get('bio'),
+                                        'avatar_url': user_info.get('avatar_url'),
+                                        'common_skills': common_skills,
+                                    })
                         except requests.RequestException as e:
                             logger.error(f"Error fetching user details: {str(e)}")
                             continue
@@ -78,4 +88,5 @@ def find_similar_github_users(user_skills, max_users=10):
         if len(unique_users) >= max_users:
             break
 
+    logger.info(f"Returning {len(unique_users)} unique GitHub matches")
     return unique_users

@@ -17,6 +17,7 @@ from scraper.views import JobScraper
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
+import traceback
 
 MAX_QUIZ_QUESTIONS = 3
 
@@ -204,6 +205,15 @@ def dynamic_quiz(request):
         
         # Store insights in session for dashboard
         request.session['ai_insights'] = ai_insights
+        
+        # Store in CareerAdviceHistory
+        CareerAdviceHistory.objects.create(
+            name=user.name,
+            email=user.email,
+            skills=user.skills,
+            experience=user.years_of_experience,
+            advice=ai_insights
+        )
         
         return redirect('final_dashboard')
 
